@@ -14,11 +14,17 @@ struct Apsis {
 };
 
 struct GameState{
+    //connection
+    bool connectedToGame;
+
+    //resources
     Resource liquidFuel;
     Resource electricCharge;
+
+    //flight-info
     Apsis apoapsis;
     Apsis periapsis;
-    // bool connectedToGame;
+
     // float altitude;
     // bool SASOn;
     // uint32_t lastUpdateMs;
