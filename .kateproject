@@ -1,0 +1,14 @@
+{
+    "name": "testproject",
+    "files": [{ "directory": ".", "recursive": 1 }],
+    "build": {
+    "directory": ".",
+    "targets": [
+        { "name": "Build",        "build_cmd": "pio run" },
+        { "name": "Upload",       "build_cmd": "pio run -t upload" },
+        { "name": "Clean",        "build_cmd": "pio run -t clean" },
+        { "name": "Autocomplete", "build_cmd": "pio run -t compiledb" }
+    ],
+    "default_target": "Upload"
+    }
+}
