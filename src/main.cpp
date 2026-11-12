@@ -1,33 +1,27 @@
 #include <Arduino.h>
+#include <KerbalSimpit.h>
 #include "GameState.h"
+#include "Handshake.h"
 
 //time
 uint32_t LastTime = 0;
 const int interval = 1000;
 uint32_t now;
 
+//simpit reference
+KerbalSimpit mySimpit(Serial);
+
 //loops
 
-void SimpitLink(){
-    if (now-LastTime >= interval) {
-        game.altitude +=100;
-        LastTime = now;
-    }
-    game.lastUpdateMs = now;
-}
-
+void SimpitLink(){}
 void GetInputs(){}
 void SetControls(){}
-void OutputControls(){
-    Serial.print("Altitude:");
-    Serial.println(game.altitude);
-
-}
+void OutputControls(){}
 
 void setup()
 {
-    Serial.begin(9600);
-
+    Serial.begin(115200);
+    initSimpit(mySimpit);
 }
 
 void loop()

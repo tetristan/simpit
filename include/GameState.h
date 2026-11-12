@@ -13,7 +13,6 @@ struct Apsis {
     int32_t timeTo;    // APSIDESTIME_MESSAGE  (s)
 };
 
-
 struct GameState{
     Resource liquidFuel;
     Resource electricCharge;
