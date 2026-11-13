@@ -2,6 +2,7 @@
 //#include <KerbalSimpit.h> //niet nodig want alleen SimpitLink interfacet met deze
 //#include "GameState.h" //wss niet nodig
 #include "SimpitLink.h"
+#include "HardwareOutput.h"
 
 //loops
 
@@ -13,7 +14,8 @@ void OutputDisplays(){} //deze krijgt een eigen cpp die schrijft naar de display
 void setup()
 {
     Serial.begin(115200);
-    initSimpit();
+    initOutput();
+    initSimpit(); //deze als laatste omdat deze bij gebrek aan handshake de rest van de loop blokkeert. Ook omdat de LCD's nodig zijn om weer te geven of de connectie is geslaagd
 }
 
 void loop()
@@ -24,5 +26,5 @@ void loop()
     GetInputs(); //hier leest ie alle inputs van de simpit en schrijft ze naar een openbare struct
     SetControls(); //hier vergelijkt ie de inputs met de gamestate, en maakt hij de nieuwe Controlstate
     OutputControls(); //hier roept ie de SimpitLink om de Controlstate naar de game te schrijven, en om de gauges en displays aan te drijven (al split ik die miss later nog)
-    OutputDisplays();
+    DisplayOutput();
 }
