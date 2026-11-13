@@ -1,41 +1,28 @@
 #include <Arduino.h>
-#include <KerbalSimpit.h>
-#include "GameState.h"
-#include "Handshake.h"
-
-//time
-uint32_t LastTime = 0;
-const int interval = 1000;
-uint32_t now;
-
-//simpit reference
-KerbalSimpit mySimpit(Serial);
+//#include <KerbalSimpit.h> //niet nodig want alleen SimpitLink interfacet met deze
+//#include "GameState.h" //wss niet nodig
+#include "SimpitLink.h"
 
 //loops
 
-void SimpitLink(){}
 void GetInputs(){}
 void SetControls(){}
-void OutputControls(){}
+void OutputControls(){} //deze gaat naar SimpitLink
+void OutputDisplays(){} //deze krijgt een eigen cpp die schrijft naar de displays
 
 void setup()
 {
     Serial.begin(115200);
-    initSimpit(mySimpit);
+    initSimpit();
 }
 
 void loop()
 {
-    now = millis();
-    SimpitLink();
-    GetInputs();
-    SetControls();
-    OutputControls();
+    SimpitGetInfo();
 
-    // now = millis();
-    // if (now-LastTime >= interval) {
-    //     Serial.println("tick");
-    //     Serial.println(now);
-    //     LastTime = now;
-    // }
+    //deze komen nog
+    GetInputs(); //hier leest ie alle inputs van de simpit en schrijft ze naar een openbare struct
+    SetControls(); //hier vergelijkt ie de inputs met de gamestate, en maakt hij de nieuwe Controlstate
+    OutputControls(); //hier roept ie de SimpitLink om de Controlstate naar de game te schrijven, en om de gauges en displays aan te drijven (al split ik die miss later nog)
+    OutputDisplays();
 }
