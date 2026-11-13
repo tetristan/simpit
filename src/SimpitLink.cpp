@@ -18,11 +18,14 @@ static KerbalSimpit MySimpit(Serial);
 void messageHandler(byte messageType, byte msg[], byte msgSize);
 
 const byte channels[] = {
-    ALTITUDE_MESSAGE,
-    VELOCITY_MESSAGE,
-    APSIDES_MESSAGE,
+    //Resources
     LF_MESSAGE,
-    OX_MESSAGE
+    LF_STAGE_MESSAGE,
+    ELECTRIC_MESSAGE,
+    //Flight info
+    ALTITUDE_MESSAGE,
+    APSIDES_MESSAGE,
+    APSIDESTIME_MESSAGE
 };
 
 void registerAllChannels() {
@@ -81,14 +84,12 @@ void messageHandler(byte messageType, byte msg[], byte msgSize) {
             break;
 
         case LF_STAGE_MESSAGE:
-            //check of de message wel volledig is aangekomen
             if (msgSize == sizeof(resourceMessage)) {
                 game.liquidFuelStage = parseMessage<resourceMessage>(msg);
             }
             break;
 
         case ELECTRIC_MESSAGE:
-            //check of de message wel volledig is aangekomen
             if (msgSize == sizeof(resourceMessage)) {
                 game.electricCharge = parseMessage<resourceMessage>(msg);
             }
@@ -97,21 +98,18 @@ void messageHandler(byte messageType, byte msg[], byte msgSize) {
 
         //Flight info
         case ALTITUDE_MESSAGE:
-            //check of de message wel volledig is aangekomen
             if (msgSize == sizeof(altitudeMessage)) {
                 game.altitude = parseMessage<altitudeMessage>(msg);
             }
             break;
 
         case APSIDES_MESSAGE:
-            //check of de message wel volledig is aangekomen
             if (msgSize == sizeof(apsidesMessage)) {
                 game.apsides = parseMessage<apsidesMessage>(msg);
             }
             break;
 
         case APSIDESTIME_MESSAGE:
-            //check of de message wel volledig is aangekomen
             if (msgSize == sizeof(apsidesTimeMessage)) {
                 game.apsidesTime = parseMessage<apsidesTimeMessage>(msg);
             }
