@@ -1,29 +1,21 @@
 #pragma once
+#include "PayloadStructs.h"
 #include <stdint.h>
-
-//voor elke soort resource
-struct Resource {
-    float available;   // current amount
-    float total;       // max capacity
-};
-
-// apoapsis en periapsis
-struct Apsis {
-    float   altitude;  // APSIDES_MESSAGE      (m)
-    int32_t timeTo;    // APSIDESTIME_MESSAGE  (s)
-};
 
 struct GameState{
     //connection
     bool connectedToGame;
 
     //resources
-    Resource liquidFuel;
-    Resource electricCharge;
+    resourceMessage liquidFuel;
+    resourceMessage liquidFuelStage;
+    resourceMessage electricCharge;
+    resourceMessage electricChargeStage;
 
     //flight-info
-    Apsis apoapsis;
-    Apsis periapsis;
+    altitudeMessage altitude;
+    apsidesMessage apsides;
+    apsidesTimeMessage apsidesTime;
 
     // float altitude;
     // bool SASOn;
