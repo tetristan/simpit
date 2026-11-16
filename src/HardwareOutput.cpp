@@ -1,7 +1,6 @@
 #include "HardwareOutput.h"
 #include "LiquidCrystal_I2C.h"
 #include "GameState.h"
-#include "WString.h"
 
 #include <Arduino.h>
 
@@ -45,17 +44,44 @@ struct ValueDef{
 
 /// Arrays //labels max 5 chars
 const ValueDef valueDefs[] = {
-    {"",    KIND_NONE},
-    {"AP",  KIND_DISTANCE},
-    {"tAP",KIND_TIME},
-    {"PE",  KIND_DISTANCE},
-    {"tPE",  KIND_DISTANCE},
+    {"",    KIND_NONE},         //VAL_NONE
+    {"AP",  KIND_DISTANCE},     //AP
+    {"tAP",KIND_TIME},          //T_AP
+    {"PE",  KIND_TIME},     //PE
+    {"tPE",  KIND_DISTANCE},    //T_PE
 };
 static_assert(sizeof(valueDefs) / sizeof(valueDefs[0]) == VAL_COUNT,
               "valueDefs out of sync with ValueID");
 
 
 // functies
+
+float getValue(ValueID id){
+    switch (id) {
+        case VAL_NONE:
+            return 0.0f;
+        case VAL_AP:
+            return game.apoapsis;
+        case VAL_T_AP:
+            return game.timeToApoapsis;
+        case VAL_PE:
+            return game.periapsis;
+        case VAL_T_PE:
+            return game.timeToPeriapsis;
+    }
+}
+
+bool isValid(ValueID id) {
+    switch (id) {
+        case VAL_AP:
+        case VAL_T_AP:
+            if(game.apoapsis <0){
+                return false;
+            };
+        default:
+            return true;
+    }
+}
 
 /// formatting values
 
@@ -88,3 +114,12 @@ void DisplayOutput(){
         lcds[0].print(game.apoapsis);
     }
 };
+
+void testOutput(){
+    for (int i=1; i< VAL_COUNT; i++) {
+        float v = getValue((ValueID)i);
+        Serial.println("TEST");
+        Serial.println(v);
+        Serial.println(valueDefs[i].label);
+    }
+}

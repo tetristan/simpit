@@ -16,9 +16,11 @@ void OutputDisplays(){} //deze krijgt een eigen cpp die schrijft naar de display
 void setup()
 {
 #ifdef FAKE_GAME
-    Serial.begin(115200);
+    Serial.begin(9600);
     fakeGameInit();
     initOutput();
+    testOutput();
+
 
 #else
     Serial.begin(115200);
