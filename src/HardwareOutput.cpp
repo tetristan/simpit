@@ -85,6 +85,6 @@ void DisplayOutput(){
         lcds[0].setCursor(0,0);
         lcds[0].print("Apoapsis: ");
         lcds[0].setCursor(0,1);
-        lcds[0].print(game.apsides.apoapsis);
+        lcds[0].print(game.apoapsis);
     }
 };

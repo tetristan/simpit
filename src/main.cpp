@@ -3,6 +3,8 @@
 //#include "GameState.h" //wss niet nodig
 #include "SimpitLink.h"
 #include "HardwareOutput.h"
+#include "Config.h"
+#include "FakeGame.h"
 
 //loops
 
@@ -13,13 +15,24 @@ void OutputDisplays(){} //deze krijgt een eigen cpp die schrijft naar de display
 
 void setup()
 {
+#ifdef FAKE_GAME
+    Serial.begin(115200);
+    fakeGameInit();
+    initOutput();
+
+#else
     Serial.begin(115200);
     initOutput();
     initSimpit(); //deze als laatste omdat deze bij gebrek aan handshake de rest van de loop blokkeert. Ook omdat de LCD's nodig zijn om weer te geven of de connectie is geslaagd
+
+#endif
 }
 
 void loop()
 {
+#ifdef FAKE_GAME
+    DisplayOutput();
+#else
     SimpitGetInfo();
 
     //deze komen nog
@@ -28,4 +41,5 @@ void loop()
     OutputControls(); //hier roept ie de SimpitLink om de Controlstate naar de game te schrijven, en om de gauges en displays aan te drijven (al split ik die miss later nog)
 
     DisplayOutput();
+#endif
 }

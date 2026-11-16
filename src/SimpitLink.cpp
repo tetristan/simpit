@@ -80,19 +80,25 @@ void messageHandler(byte messageType, byte msg[], byte msgSize) {
         case LF_MESSAGE:
             //check of de message wel volledig is aangekomen
             if (msgSize == sizeof(resourceMessage)) {
-                game.liquidFuel = parseMessage<resourceMessage>(msg);
+                resourceMessage m = parseMessage<resourceMessage>(msg);
+                game.liquidFuel_total = m.total;
+                game.liquidFuel_available = m.available;
             }
             break;
 
         case LF_STAGE_MESSAGE:
             if (msgSize == sizeof(resourceMessage)) {
-                game.liquidFuelStage = parseMessage<resourceMessage>(msg);
+                resourceMessage m = parseMessage<resourceMessage>(msg);
+                game.liquidFuelStage_total = m.total;
+                game.liquidFuelStage_available = m.available;
             }
             break;
 
         case ELECTRIC_MESSAGE:
             if (msgSize == sizeof(resourceMessage)) {
-                game.electricCharge = parseMessage<resourceMessage>(msg);
+                resourceMessage m = parseMessage<resourceMessage>(msg);
+                game.electricCharge_total = m.total;
+                game.electricCharge_available = m.available;
             }
             break;
 
@@ -100,19 +106,25 @@ void messageHandler(byte messageType, byte msg[], byte msgSize) {
         //Flight info
         case ALTITUDE_MESSAGE:
             if (msgSize == sizeof(altitudeMessage)) {
-                game.altitude = parseMessage<altitudeMessage>(msg);
+                altitudeMessage m = parseMessage<altitudeMessage>(msg);
+                game.altitude_sealevel = m.sealevel;
+                game.altitude_surface = m.surface;
             }
             break;
 
         case APSIDES_MESSAGE:
             if (msgSize == sizeof(apsidesMessage)) {
-                game.apsides = parseMessage<apsidesMessage>(msg);
+                apsidesMessage m = parseMessage<apsidesMessage>(msg);
+                game.apoapsis = m.apoapsis;
+                game.periapsis= m.periapsis;
             }
             break;
 
         case APSIDESTIME_MESSAGE:
             if (msgSize == sizeof(apsidesTimeMessage)) {
-                game.apsidesTime = parseMessage<apsidesTimeMessage>(msg);
+                apsidesTimeMessage m = parseMessage<apsidesTimeMessage>(msg);
+                game.timeToApoapsis = m.apoapsis;
+                game.timeToPeriapsis= m.periapsis;
             }
             break;
     }
