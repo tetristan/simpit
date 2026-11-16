@@ -7,6 +7,7 @@
 #include <KerbalSimpit.h>
 
 //variables
+/// connection variables
 unsigned long lastHeard = 0;
 unsigned long lastPing  = 0;
 const unsigned long PING_INTERVAL = 1000; // ms

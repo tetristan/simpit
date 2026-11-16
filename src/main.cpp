@@ -26,5 +26,6 @@ void loop()
     GetInputs(); //hier leest ie alle inputs van de simpit en schrijft ze naar een openbare struct
     SetControls(); //hier vergelijkt ie de inputs met de gamestate, en maakt hij de nieuwe Controlstate
     OutputControls(); //hier roept ie de SimpitLink om de Controlstate naar de game te schrijven, en om de gauges en displays aan te drijven (al split ik die miss later nog)
+
     DisplayOutput();
 }
