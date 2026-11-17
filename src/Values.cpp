@@ -8,8 +8,8 @@ const ValueDef valueDefs[] = {
     {"",    KIND_NONE},         //VAL_NONE
     {"AP",  KIND_DISTANCE},     //AP
     {"tAP",KIND_TIME},          //T_AP
-    {"PE",  KIND_TIME},     //PE
-    {"tPE",  KIND_DISTANCE},    //T_PE
+    {"PE",  KIND_DISTANCE},     //PE
+    {"tPE",  KIND_TIME},    //T_PE
 };
 static_assert(sizeof(valueDefs) / sizeof(valueDefs[0]) == VAL_COUNT,
               "valueDefs out of sync with ValueID");
@@ -29,11 +29,12 @@ float getValue(ValueID id){
         case VAL_T_PE:
             return game.timeToPeriapsis;
     }
+    return 0.0f;
 }
 
 bool isValid(ValueID id) {
     switch (id) {
-        case VAL_AP:
+        case VAL_AP:            //fallthrough
         case VAL_T_AP:
             if(game.apoapsis <0){
                 return false;

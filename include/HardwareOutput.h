@@ -2,3 +2,4 @@
 
 void initOutput();
 void DisplayOutput();
+void testOutput();

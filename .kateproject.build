@@ -1,0 +1,33 @@
+{
+    "Auto_generated": "This file is auto-generated. Any extra tags or formatting will be lost",
+    "target_sets": [
+        {
+            "cmake_config": "",
+            "directory": "/var/mnt/gemheart/Projecten/Microcontroller/testproject/.",
+            "loaded_via_cmake": false,
+            "name": "testproject",
+            "targets": [
+                {
+                    "build_cmd": "pio run",
+                    "name": "Build",
+                    "run_cmd": ""
+                },
+                {
+                    "build_cmd": "pio run -t upload",
+                    "name": "Upload",
+                    "run_cmd": ""
+                },
+                {
+                    "build_cmd": "pio run -t clean",
+                    "name": "Clean",
+                    "run_cmd": ""
+                },
+                {
+                    "build_cmd": "pio run -t compiledb",
+                    "name": "Autocomplete",
+                    "run_cmd": ""
+                }
+            ]
+        }
+    ]
+}

@@ -7,15 +7,20 @@ struct GameState{
     bool connectedToGame;
 
     //resources
-    resourceMessage liquidFuel;
-    resourceMessage liquidFuelStage;
-    resourceMessage electricCharge;
-    resourceMessage electricChargeStage;
+    float liquidFuel_total;
+    float liquidFuel_available;
+    float liquidFuelStage_total;
+    float liquidFuelStage_available;
+    float electricCharge_total;
+    float electricCharge_available;
 
     //flight-info
-    altitudeMessage altitude;
-    apsidesMessage apsides;
-    apsidesTimeMessage apsidesTime;
+    float altitude_sealevel;
+    float altitude_surface;
+    float apoapsis;
+    float periapsis;
+    float timeToApoapsis;
+    float timeToPeriapsis;
 
     // float altitude;
     // bool SASOn;
