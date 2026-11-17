@@ -102,6 +102,27 @@ void testFormatTime() {
     }
 }
 
+void testFormatAll() {
+    for (uint8_t i = 1; i < VAL_COUNT; i++) {
+        ValueID id = (ValueID)i;                // int → enum: needs a cast
+        const ValueDef& def = valueDefs[id];    // short name for this row
+
+        char valueText[VALUE_TEXT_SIZE] = "";
+        if (isValid(id)) {
+            formatValue(def.kind, getValue(id), valueText, sizeof(valueText));
+        } else {
+            snprintf(valueText, sizeof(valueText), "---");
+        }
+
+        char line[LCD_COLS + 1];
+        buildLine(def.label, valueText, line);
+
+        Serial.print('|');
+        Serial.print(line);
+        Serial.println('|');
+    }
+}
+
 void testOutput(){
     for (int i=1; i< VAL_COUNT; i++) {
         // float v = getValue((ValueID)i);
@@ -116,8 +137,12 @@ void testOutput(){
         Serial.print('|');                 // pipes make the spaces visible
         Serial.print(buf);
         Serial.println('|');
+        Serial.println('TESTING DISTANCE');
         testFormatDistance();
+        Serial.println('TESTING TIME');
         testFormatTime();
+        Serial.println('TESTING ALL');
+        testFormatAll();
     }
 }
 
