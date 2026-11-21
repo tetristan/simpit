@@ -20,9 +20,6 @@ void setup()
 
     fakeGameInit();
     initOutput();
-    testOutput();
-    testSlots();
-
 
 #else
     Serial.begin(115200);
@@ -35,7 +32,7 @@ void setup()
 void loop()
 {
 #ifdef FAKE_GAME
-    DisplayOutput();
+    displayUpdate();
 #else
     SimpitGetInfo();
 

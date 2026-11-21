@@ -1,7 +1,9 @@
 #pragma once
 
 #include <stdint.h>
+#include "Values.h"
 
+//LCD's
 enum LcdID : uint8_t {
     LCD_L12,
     LCD_L3,
@@ -16,6 +18,8 @@ struct LcdDef{
     uint8_t rows;
     char* name;
 };
+
+//Slots (een slot is een slot voor informatie, dit bestaat uit 2 rijen (omdat values per 2 verpakt zijn). Deze zijn gemaakt omdat ik 6 'slots' heb en sommige displays kunnen 2 waarden laten zien en sommigen 4 (want 2 displays zijn 4 regels ipv 2).)
 
 enum SlotID : uint8_t {
     SLOT_L1,
@@ -32,8 +36,15 @@ struct SlotDef{
     uint8_t firstRow;
 };
 
+//Fields (een field is een verzameling aan 2 stukken informatie)
+
+struct Field{
+    ValueID line1;
+    ValueID line2;
+};
+
 void initOutput();
-void DisplayOutput();
+void displayUpdate();
 
 //test fucties
 void testOutput();

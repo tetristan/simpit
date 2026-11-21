@@ -122,32 +122,61 @@ void valueToLine(ValueID id, char* out){
     buildLine(def.label,valueText,out);
 }
 
-void DisplayOutput(){
-    // if(game.connectedToGame ==false){
-    //     lcds[0].setCursor(0,0);
-    //     lcds[0].print("waiting for KSP");
-    // }
-    //
-    // else if (game.connectedToGame ==true) {
-    //     lcds[0].setCursor(0,0);
-    //     lcds[0].print("Apoapsis: ");
-    //     lcds[0].setCursor(0,1);
-    //     lcds[0].print(game.apoapsis);
-    // }
+void fieldToLines(const Field& field, char* line1, char* line2){
+    valueToLine(field.line1, line1);
+    valueToLine(field.line2, line2);
+}
+
+void renderSlot(SlotID slot, const Field& field){
+    const SlotDef& def = slotDefs[slot]; //def = ref naar het slot
+    LcdID lcd = def.lcd;
+    if(!lcdPresent[lcd]){ //als de LCD er niet is -> skip
+        return;
+    }
+    char line1[LCD_COLS+1];
+    char line2[LCD_COLS+1];
+    fieldToLines(field,line1 ,line2);
+    lcds[lcd].setCursor(0, def.firstRow);
+    lcds[lcd].print(line1);
+    lcds[lcd].setCursor(0, def.firstRow+1);
+    lcds[lcd].print(line2);
+}
+
+void displayUpdate(){
+    static unsigned long lastUpdate = 0;
+    if (millis() - lastUpdate < DISPLAY_INTERVAL_MS){
+        return;
+    }else{
+        lastUpdate = millis();
+        renderSlot(SLOT_R3, {VAL_AP, VAL_T_AP});
+        renderSlot(SLOT_R1, {VAL_PE, VAL_T_PE});
+    }
 }
 
 //Testfuncties
 
 void testSlots(){
-    for (uint8_t i = 0; i<SLOT_COUNT;i++) {
-        Serial.println(lcdDefs[slotDefs[i].lcd].name);
-        char line[LCD_COLS + 1];
-        valueToLine(VAL_NONE, line);
+    // for (uint8_t i = 0; i<SLOT_COUNT;i++) {
+    //     Serial.println(lcdDefs[slotDefs[i].lcd].name);
+    //     char line[LCD_COLS + 1];
+    //     valueToLine(VAL_NONE, line);
+    //
+    //     Serial.print('|');
+    //     Serial.print(line);
+    //     Serial.println('|');
+    // }
+    Serial.println("FIELD-TEST INCOMING");
+    char line1[LCD_COLS+1];
+    char line2[LCD_COLS+1];
 
-        Serial.print('|');
-        Serial.print(line);
-        Serial.println('|');
-    }
+    fieldToLines({VAL_AP, VAL_T_AP}, line1, line2);
+    Serial.print('|');
+    Serial.print(line1);
+    Serial.println('|');
+    Serial.print('|');
+    Serial.print(line2);
+    Serial.println('|');
+    renderSlot(SLOT_R2,{VAL_AP, VAL_T_AP});
 }
 
 void testFormatDistance() {
