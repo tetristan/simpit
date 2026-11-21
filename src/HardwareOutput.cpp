@@ -10,94 +10,120 @@
 #include <stdint.h>
 
 // hardware variables
-/// flags
+/// LCD's
+LcdUnit lcdUnits[] = {
+    LiquidCrystal_I2C(0x25, 20, 4), 0x25, 20, 4, "Left Big",
+    LiquidCrystal_I2C(0x24, 16, 2), 0x24, 16, 2, "Left small",
+    LiquidCrystal_I2C(0x27, 20, 4), 0x27, 20, 4, "Right big",
+    LiquidCrystal_I2C(0x26, 16, 2), 0x26, 16, 2, "Right small",
+};
+/// telt de grootte van de array
+const uint8_t NUM_DISPLAYS = sizeof(lcdUnits) / sizeof(lcdUnits[0]);
+
+/// houdt bij of alle LCD's verbonden zijn
 bool lcdPresent[LCD_COUNT];
 
-///tables
-constexpr LcdDef lcdDefs[] = {
-    0x25, 16, 4, "L12",
-    0x24, 16, 2, "L3",
-    0x27, 16, 4, "R12",
-    0x26, 16, 2, "R3",
+///layout, per mode/lcd/regel
+constexpr ValueID LcdModeLayout[MODE_COUNT][NUM_DISPLAYS][4] = { //4 is de max line-count
+    //---MODE_ORBIT---
+    {
+    /*LCD_LBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+    /*LCD_LSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+    /*LCD_RBIG*/{VAL_AP,       VAL_PE,     VAL_T_AP,       VAL_T_PE},
+    /*LCD_RSMALL*/{VAL_AP,    VAL_T_AP,   VAL_NONE,   VAL_NONE},
+    },
+
+    //---MODE_LANDING---
+    {
+        /*LCD_LBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_LSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_RBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_RSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+    },
+
+    //---MODE_PLANE---
+    {
+        /*LCD_LBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_LSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_RBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_RSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+    },
+
+    //---MODE_SURFACE---
+    {
+        /*LCD_LBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE  },
+        /*LCD_LSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_RBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_RSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+    },
+
+    //---MODE_RENDEZVOUS---
+    {
+        /*LCD_LBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE  },
+        /*LCD_LSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_RBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+        /*LCD_RSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+    },
 };
 
-constexpr SlotDef slotDefs[] = {
-    LCD_L12, 0,     //SLOT_L1
-    LCD_L12, 2,     //SLOT_L2
-    LCD_L3, 0,      //SLOT_L3
-    LCD_R12, 0,     //SLOT_R1
-    LCD_R12, 2,     //SLOT_R2
-    LCD_R3, 0,      //SLOT_R3
-};
-
-/// alle LCD-addresses
-LiquidCrystal_I2C lcds[LCD_COUNT] = {
-    LiquidCrystal_I2C(lcdDefs[LCD_L12].address, lcdDefs[LCD_L12].cols, lcdDefs[LCD_L12].rows),
-    LiquidCrystal_I2C(lcdDefs[LCD_L3].address, lcdDefs[LCD_L3].cols, lcdDefs[LCD_L3].rows),
-    LiquidCrystal_I2C(lcdDefs[LCD_R12].address, lcdDefs[LCD_R12].cols, lcdDefs[LCD_R12].rows),
-    LiquidCrystal_I2C(lcdDefs[LCD_R3].address, lcdDefs[LCD_R3].cols, lcdDefs[LCD_R3].rows)
-};
-
-/// telt de grootte van de array
-const uint8_t NUM_DISPLAYS = sizeof(lcds) / sizeof(lcds[0]);
-
-/// LCD columns
-constexpr uint8_t LCD_COLS = 16; //LCD COLS is 16, constexpr maak thet op compile-time voor optimization
+//LCD buffer
+char lastDrawn[NUM_DISPLAYS][MAX_LINES][MAX_COLS + 1]; //deze array bewaart voor alle LCD's de huidige staat
 
 
 // functions
+void invalidateDisplays() {     // forceert volledige redraw (voor na mode-change of na init_output)
+    memset(lastDrawn, 0, sizeof(lastDrawn));
+}
 
 void initOutput(){
     //initialize comms
     Wire.begin();
 
     //initialize LCD's
-    for (uint8_t i = 0; i<LCD_COUNT; i++) {
-        uint8_t addr = lcdDefs[i].address;
-        Wire.beginTransmission(addr);
+    for (uint8_t i = 0; i<NUM_DISPLAYS; i++) {
+        LcdUnit& u = lcdUnits[i];
+
+        Wire.beginTransmission(u.address);
         uint8_t err = Wire.endTransmission();
         if (err==0) {
             lcdPresent[i] = true;
-            lcds[i].init();
-            lcds[i].backlight();
-            lcds[i].clear();
-            lcds[i].print(lcdDefs[i].name);
-            lcds[i].setCursor(12, 0);
-            lcds[i].print("0x");
-            lcds[i].setCursor(14, 0);
-            lcds[i].print(lcdDefs[i].address, HEX);
+            u.lcd.init();
+            u.lcd.backlight();
+            u.lcd.clear();
+            u.lcd.print(u.label);
+            u.lcd.setCursor(12, 0);
+            u.lcd.print("0x");
+            u.lcd.setCursor(14, 0);
+            u.lcd.print(u.address, HEX);
         }
         else {
             lcdPresent[i] = false;
-#ifdef FAKEFAKE_GAME
-            Serial.println(LcdDefs.name);
-            Serial.println("Missing LCD: 0x");
-            Serial.print(addr, HEX);
-#endif
         }
     }
+    //empty LCD's
+    invalidateDisplays();
 }
 
-void buildLine(const char* label, const char* valueText, char* out) {
+void buildLine(const char* label, const char* valueText, char* out, uint8_t lcdCols) {
     // Missing text counts as empty text, so strlen never sees a nullptr
     if (label == nullptr)     label = "";
     if (valueText == nullptr) valueText = "";
 
     // maakt alles leeg en zet de end-marker neer
-    memset(out, ' ', LCD_COLS);
-    out[LCD_COLS] = '\0';
+    memset(out, ' ', lcdCols);
+    out[lcdCols] = '\0';
 
     // meet de input en clampt ze op een max lengte
     size_t labelLen = strlen(label);
     size_t valueLen = strlen(valueText);
-    if (labelLen > LCD_COLS) labelLen = LCD_COLS;
-    if (valueLen > LCD_COLS) valueLen = LCD_COLS;
+    if (labelLen > lcdCols) labelLen = lcdCols;
+    if (valueLen > lcdCols) valueLen = lcdCols;
 
     // plaatst label links
     memcpy(out, label, labelLen);
 
     // plaatst value rechts, plus een space ertussen
-    size_t valueStart = LCD_COLS - valueLen;   // safe: valueLen <= LCD_COLS
+    size_t valueStart = lcdCols - valueLen;   // safe: valueLen <= lcdCols
     memcpy(out + valueStart, valueText, valueLen);
 
     // Keep one space between label and value
@@ -106,148 +132,48 @@ void buildLine(const char* label, const char* valueText, char* out) {
     }
 }
 
-void valueToLine(ValueID id, char* out){
+void valueToLine(ValueID id, uint8_t lcdCols, char* out){
     if (id == VAL_NONE){        //value none = lege line
-        buildLine("","",out);
+        buildLine("","",out, lcdCols);
         return;
     }
     const ValueDef& def = valueDefs[id];
 
     if (!isValid(id)){     //value invalid = ---
-        buildLine(def.label,"---" ,out);
+        buildLine(def.label,"---" ,out, lcdCols);
         return;
     }
     char valueText[VALUE_TEXT_SIZE] = "";
     formatValue(def.kind, getValue(id), valueText, sizeof(valueText));
-    buildLine(def.label,valueText,out);
+    buildLine(def.label,valueText,out, lcdCols);
 }
 
-void fieldToLines(const Field& field, char* line1, char* line2){
-    valueToLine(field.line1, line1);
-    valueToLine(field.line2, line2);
-}
+void renderLcd(uint8_t lcdId, uint8_t mode) {
+    if (!lcdPresent[lcdId]) return;
+    LcdUnit& u = lcdUnits[lcdId];
 
-void renderSlot(SlotID slot, const Field& field){
-    const SlotDef& def = slotDefs[slot]; //def = ref naar het slot
-    LcdID lcd = def.lcd;
-    if(!lcdPresent[lcd]){ //als de LCD er niet is -> skip
-        return;
+    for (uint8_t line = 0; line < u.rows; line++) {
+        char buf[MAX_COLS + 1];
+        valueToLine(LcdModeLayout[mode][lcdId][line], u.cols, buf); //schrijft de huidige staat naar de
+
+        if (strcmp(buf, lastDrawn[lcdId][line]) == 0) continue;  // waarde is veranderd
+
+        u.lcd.setCursor(0, line);
+        u.lcd.print(buf);
+        strcpy(lastDrawn[lcdId][line], buf);
     }
-    char line1[LCD_COLS+1];
-    char line2[LCD_COLS+1];
-    fieldToLines(field,line1 ,line2);
-    lcds[lcd].setCursor(0, def.firstRow);
-    lcds[lcd].print(line1);
-    lcds[lcd].setCursor(0, def.firstRow+1);
-    lcds[lcd].print(line2);
 }
 
 void displayUpdate(){
     static unsigned long lastUpdate = 0;
+    static uint8_t nextLcd = 0;
+
     if (millis() - lastUpdate < DISPLAY_INTERVAL_MS){
         return;
-    }else{
-        lastUpdate = millis();
-        renderSlot(SLOT_R3, {VAL_AP, VAL_T_AP});
-        renderSlot(SLOT_R1, {VAL_PE, VAL_T_PE});
     }
+
+    lastUpdate = millis();
+
+    renderLcd(nextLcd, game.mode);
+    nextLcd = (nextLcd +1)% LCD_COUNT;
 }
-
-//Testfuncties
-
-void testSlots(){
-    // for (uint8_t i = 0; i<SLOT_COUNT;i++) {
-    //     Serial.println(lcdDefs[slotDefs[i].lcd].name);
-    //     char line[LCD_COLS + 1];
-    //     valueToLine(VAL_NONE, line);
-    //
-    //     Serial.print('|');
-    //     Serial.print(line);
-    //     Serial.println('|');
-    // }
-    Serial.println("FIELD-TEST INCOMING");
-    char line1[LCD_COLS+1];
-    char line2[LCD_COLS+1];
-
-    fieldToLines({VAL_AP, VAL_T_AP}, line1, line2);
-    Serial.print('|');
-    Serial.print(line1);
-    Serial.println('|');
-    Serial.print('|');
-    Serial.print(line2);
-    Serial.println('|');
-    renderSlot(SLOT_R2,{VAL_AP, VAL_T_AP});
-}
-
-void testFormatDistance() {
-    float tests[] = {0, 850, 9999, 85100, -412000, 12000000, 1.2e10, 1e30};
-    char out[11];   // value budget 10 + '\0'
-
-    for (uint8_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
-        formatDistance(tests[i], out, sizeof(out));
-        Serial.print('|');
-        Serial.print(out);
-        Serial.print("|  len=");
-        Serial.println(strlen(out));
-    }
-}
-
-void testFormatTime() {
-    float tests[] = {0, 45, 59.6, 60, 725, -720005, 3600, 21599, 21600, 100000, NAN, 1e12};
-    char out[11] = "";
-
-    for (uint8_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
-        formatTime(tests[i], out, sizeof(out));
-        Serial.print('|');
-        Serial.print(out);
-        Serial.print("|  len=");
-        Serial.println(strlen(out));
-    }
-}
-
-void testFormatAll() {
-    for (uint8_t i = 1; i < VAL_COUNT; i++) {
-        ValueID id = (ValueID)i;                // int → enum: needs a cast
-        const ValueDef& def = valueDefs[id];    // short name for this row
-
-        char valueText[VALUE_TEXT_SIZE] = "";
-        if (isValid(id)) {
-            formatValue(def.kind, getValue(id), valueText, sizeof(valueText));
-        } else {
-            snprintf(valueText, sizeof(valueText), "---");
-        }
-
-        char line[LCD_COLS + 1];
-        buildLine(def.label, valueText, line);
-
-        Serial.print('|');
-        Serial.print(line);
-        Serial.println('|');
-
-    }
-}
-
-void testOutput(){
-    for (int i=1; i< VAL_COUNT; i++) {
-        // float v = getValue((ValueID)i);
-        // Serial.println("TEST");
-        // Serial.println(v);
-        // Serial.println(valueDefs[i].label);
-
-        char buf[LCD_COLS + 1];            // room for 16 characters + '\0'
-        buildLine("Ap", "85.1km", buf);    // buildLine fills buf
-        lcds[0].setCursor(0, 1);
-        lcds[0].print(buf);
-        Serial.print('|');                 // pipes make the spaces visible
-        Serial.print(buf);
-        Serial.println('|');
-        Serial.println('TESTING DISTANCE');
-        testFormatDistance();
-        Serial.println('TESTING TIME');
-        testFormatTime();
-        Serial.println('TESTING ALL');
-        testFormatAll();
-    }
-}
-
-

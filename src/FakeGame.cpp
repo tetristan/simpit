@@ -7,6 +7,7 @@
 void fakeGameInit() {
     // connection
     game.connectedToGame = true;
+    game.mode = MODE_ORBIT;
 
     // resources (total = capacity, available = what's left)
     game.liquidFuel_total          = 3240.0f;   // whole vessel
