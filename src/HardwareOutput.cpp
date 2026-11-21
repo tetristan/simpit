@@ -3,14 +3,32 @@
 #include "GameState.h"
 #include "Values.h"
 #include "Format.h"
+#include "Config.h"
 
 #include <Arduino.h>
+#include <Wire.h>
+#include <stdint.h>
 
 // hardware variables
-/// alle LCD-addresses
-LiquidCrystal_I2C lcds[] = {
-    LiquidCrystal_I2C(0x27, 16, 2)
+/// flags
+bool lcdPresent[LCD_COUNT];
+
+
+constexpr LcdDef lcdDefs[] = {
+        0x25, 16, 4, "L12",
+        0x27, 16, 2, "L3",
+        0x24, 16, 4, "R12",
+        0x26, 16, 2, "R3",
 };
+
+/// alle LCD-addresses
+LiquidCrystal_I2C lcds[LCD_COUNT] = {
+    LiquidCrystal_I2C(lcdDefs[LCD_L12].address, lcdDefs[LCD_L12].cols, lcdDefs[LCD_L12].rows),
+    LiquidCrystal_I2C(lcdDefs[LCD_L3].address, lcdDefs[LCD_L3].cols, lcdDefs[LCD_L3].rows),
+    LiquidCrystal_I2C(lcdDefs[LCD_R12].address, lcdDefs[LCD_R12].cols, lcdDefs[LCD_R12].rows),
+    LiquidCrystal_I2C(lcdDefs[LCD_R3].address, lcdDefs[LCD_R3].cols, lcdDefs[LCD_R3].rows)
+};
+
 /// telt de grootte van de array
 const uint8_t NUM_DISPLAYS = sizeof(lcds) / sizeof(lcds[0]);
 
@@ -21,16 +39,35 @@ constexpr uint8_t LCD_COLS = 16; //LCD COLS is 16, constexpr maak thet op compil
 // functions
 
 void initOutput(){
-    //initialice LCD's
-    for (uint8_t i =0; i< NUM_DISPLAYS; i++) {
-        lcds[i].init();
-        lcds[i].backlight();
-        lcds[i].clear();
-        lcds[i].setCursor(0,0);
-        lcds[i].print("LCD: ");
-        lcds[i].print(i+1);
+    //initialize comms
+    Wire.begin();
+
+    //initialize LCD's
+    for (uint8_t i = 0; i<LCD_COUNT; i++) {
+        uint8_t addr = lcdDefs[i].address;
+        Wire.beginTransmission(addr);
+        uint8_t err = Wire.endTransmission();
+        if (err==0) {
+            lcdPresent[i] = true;
+            lcds[i].init();
+            lcds[i].backlight();
+            lcds[i].clear();
+            lcds[i].print(lcdDefs[i].name);
+            lcds[i].setCursor(12, 0);
+            lcds[i].print("0x");
+            lcds[i].setCursor(14, 0);
+            lcds[i].print(lcdDefs[i].address, HEX);
+        }
+        else {
+            lcdPresent[i] = false;
+#ifdef FAKEFAKE_GAME
+            Serial.println(LcdDefs.name);
+            Serial.println("Missing LCD: 0x");
+            Serial.print(addr, HEX);
+#endif
+        }
     }
-};
+}
 
 void buildLine(const char* label, const char* valueText, char* out) {
     // Missing text counts as empty text, so strlen never sees a nullptr
@@ -72,7 +109,7 @@ void DisplayOutput(){
     //     lcds[0].setCursor(0,1);
     //     lcds[0].print(game.apoapsis);
     // }
-};
+}
 
 //Testfuncties
 

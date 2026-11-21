@@ -17,6 +17,7 @@ void setup()
 {
 #ifdef FAKE_GAME
     Serial.begin(9600);
+
     fakeGameInit();
     initOutput();
     testOutput();
