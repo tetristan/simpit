@@ -13,12 +13,21 @@
 /// flags
 bool lcdPresent[LCD_COUNT];
 
-
+///tables
 constexpr LcdDef lcdDefs[] = {
-        0x25, 16, 4, "L12",
-        0x27, 16, 2, "L3",
-        0x24, 16, 4, "R12",
-        0x26, 16, 2, "R3",
+    0x25, 16, 4, "L12",
+    0x24, 16, 2, "L3",
+    0x27, 16, 4, "R12",
+    0x26, 16, 2, "R3",
+};
+
+constexpr SlotDef slotDefs[] = {
+    LCD_L12, 0,     //SLOT_L1
+    LCD_L12, 2,     //SLOT_L2
+    LCD_L3, 0,      //SLOT_L3
+    LCD_R12, 0,     //SLOT_R1
+    LCD_R12, 2,     //SLOT_R2
+    LCD_R3, 0,      //SLOT_R3
 };
 
 /// alle LCD-addresses
@@ -97,6 +106,22 @@ void buildLine(const char* label, const char* valueText, char* out) {
     }
 }
 
+void valueToLine(ValueID id, char* out){
+    if (id == VAL_NONE){        //value none = lege line
+        buildLine("","",out);
+        return;
+    }
+    const ValueDef& def = valueDefs[id];
+
+    if (!isValid(id)){     //value invalid = ---
+        buildLine(def.label,"---" ,out);
+        return;
+    }
+    char valueText[VALUE_TEXT_SIZE] = "";
+    formatValue(def.kind, getValue(id), valueText, sizeof(valueText));
+    buildLine(def.label,valueText,out);
+}
+
 void DisplayOutput(){
     // if(game.connectedToGame ==false){
     //     lcds[0].setCursor(0,0);
@@ -112,6 +137,18 @@ void DisplayOutput(){
 }
 
 //Testfuncties
+
+void testSlots(){
+    for (uint8_t i = 0; i<SLOT_COUNT;i++) {
+        Serial.println(lcdDefs[slotDefs[i].lcd].name);
+        char line[LCD_COLS + 1];
+        valueToLine(VAL_NONE, line);
+
+        Serial.print('|');
+        Serial.print(line);
+        Serial.println('|');
+    }
+}
 
 void testFormatDistance() {
     float tests[] = {0, 850, 9999, 85100, -412000, 12000000, 1.2e10, 1e30};
@@ -157,6 +194,7 @@ void testFormatAll() {
         Serial.print('|');
         Serial.print(line);
         Serial.println('|');
+
     }
 }
 

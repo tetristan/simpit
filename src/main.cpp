@@ -21,6 +21,7 @@ void setup()
     fakeGameInit();
     initOutput();
     testOutput();
+    testSlots();
 
 
 #else
