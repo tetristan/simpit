@@ -35,3 +35,4 @@ extern const ValueDef valueDefs[];
 //FUNCTIONS
 float getValue(ValueID id);
 bool isValid(ValueID id);
+void updateDerived();

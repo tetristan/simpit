@@ -1,6 +1,7 @@
 #pragma once
 #include "PayloadStructs.h"
 #include <stdint.h>
+#include "Values.h"
 
 enum SimpitMode : uint8_t{MODE_ORBIT, MODE_LANDING, MODE_PLANE, MODE_SURFACE, MODE_RENDEZVOUS, MODE_COUNT};
 
@@ -15,8 +16,18 @@ struct GameState{
     float liquidFuel_available;
     float liquidFuelStage_total;
     float liquidFuelStage_available;
+    float oxidizer_total;
+    float oxidizer_available;
+    float oxidizerStage_total;
+    float oxidizerStage_available;
+    float xenon_total;
+    float xenon_available;
+    float xenonStage_total; //monopropellant voor vessels
+    float xenonStage_available; //^
     float electricCharge_total;
     float electricCharge_available;
+    float monopropellant_total; //specifiek voor EVA
+    float monopropellant_available; // ^
 
     //flight-info
     float altitude_sealevel;
@@ -34,3 +45,5 @@ struct GameState{
 };
 
 extern GameState game;
+
+void updateDerived();

@@ -1,4 +1,4 @@
-#include "HardwareOutput.h"
+#include "LcdOutput.h"
 #include "LiquidCrystal_I2C.h"
 #include "GameState.h"
 #include "Values.h"
