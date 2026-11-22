@@ -37,6 +37,57 @@ struct GameState{
     float timeToApoapsis;
     float timeToPeriapsis;
 
+    //velocity
+    float velocity_orbital;
+    float velocity_surface;
+    float velocity_vertical;
+
+    //airspeed
+    float airspeed_IAS;
+    float airspeed_mach;
+    float gForce;
+
+    //deltaV and burn time
+    float deltaV_stage;
+    float deltaV_total;
+    float burnTime_stage;
+    float burnTime_total;
+
+    //rotation (vessel pointing)
+    float heading;      // 0 - 360
+    float pitch;        // -90 - +90
+    float roll;         // -180 - +180
+
+    //temperature
+    float heatLimitPercent;   // 0 - 100, highest of part temp and skin temp
+
+    //flight status (flags and status bytes keep their own types)
+    bool inFlight;
+    bool isEVA;
+    bool hasTarget;
+    uint8_t situation;          // KSP1 Vessel.Situations flags: 1 landed, 2 splashed, 4 prelaunch, 8 flying, 16 suborbital, 32 orbiting, 64 escaping, 128 docked
+    float currentStage;         // number of stages remaining (capped at 255)
+    float commNetSignalPercent; // 0 - 100, 0 when CommNet isn't used
+
+    //target (only meaningful when hasTarget)
+    float target_distance;
+    float target_velocity;          // relative velocity
+    float target_heading;           // direction to the target
+    float target_pitch;
+    float target_velocityHeading;   // direction of the relative velocity
+    float target_velocityPitch;
+
+    //maneuver node (no "has node" flag yet: test in KSP what arrives without a node)
+    float node_timeTo;
+    float node_deltaV;
+    float node_burnTime;
+    float node_deltaVTotal;     // all planned nodes together
+    float node_heading;
+    float node_pitch;
+
+    float node_startBurnIn;     // zelf berekenen
+    float velocity_horizontal;     // zelf berekenen
+
     // float altitude;
     // bool SASOn;
     // uint32_t lastUpdateMs;

@@ -6,6 +6,7 @@
 #include "Config.h"
 #include "FakeGame.h"
 #include "GameState.h"
+#include "initI2C.h"
 
 //loops
 
@@ -17,13 +18,13 @@ void OutputDisplays(){} //deze krijgt een eigen cpp die schrijft naar de display
 void setup()
 {
 #ifdef FAKE_GAME
-    Serial.begin(9600);
 
     fakeGameInit();
     initOutput();
 #endif
 
     Serial.begin(115200);
+    initI2C(); //moet als eerste, want i2c is nodig voor de volgende functies
     initOutput();
     initSimpit(); //deze als laatste omdat deze bij gebrek aan handshake de rest van de loop blokkeert. Ook omdat de LCD's nodig zijn om weer te geven of de connectie is geslaagd
 }
@@ -31,6 +32,8 @@ void setup()
 void loop()
 {
 #ifdef FAKE_GAME
+    printDebugToKSP();
+    updateDerived();
     displayUpdate();
 #endif
     SimpitGetInfo();
@@ -41,4 +44,5 @@ void loop()
     SetControls(); //hier vergelijkt ie de inputs met de gamestate, en maakt hij de nieuwe Controlstate
     OutputControls(); //hier roept ie de SimpitLink om de Controlstate naar de game te schrijven, en om de gauges en displays aan te drijven (al split ik die miss later nog)
     displayUpdate();
+    printDebugToKSP();
 }

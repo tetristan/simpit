@@ -5,11 +5,15 @@ GameState game = {};
 
 //zelf-berekende waarden
 void updateHorizontalSpeed(){
-    // float surfSpd =
-    // float vertSpd =
-    // =sqrt(surfspt^2 - vertical^2)
+    float vs = game.velocity_surface;
+    float vv = game.velocity_vertical;
+    game.velocity_horizontal = sqrt(max(0.0f, vs*vs - vv*vv));
+    return;
 };
 void updateTimeToImpact(){
+    // float vDown = -game.velocity_vertical;
+    // float h = game.altitude_surface;
+
     // float vertSpd
     // float radar-alt
     // if vertSpd >0 (als vertSpd 0 is, maak de return 'NAN', dan maakt IsValid er --- van).
@@ -22,8 +26,7 @@ void updateTimeToImpact(){
     return;
 };
 void updateStartBurnIn(){
-    // float burntime (voor maneuver)
-    // =burntime/2
+    game.node_startBurnIn = game.node_timeTo - (game.node_burnTime / 2.0f); //want de burn vind precies halverwege de node plaats (de helft voor en de helft na de node).
     return;
 
 };

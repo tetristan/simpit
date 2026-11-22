@@ -2,3 +2,4 @@
 
 void initSimpit();
 void SimpitGetInfo();
+void printDebugToKSP();

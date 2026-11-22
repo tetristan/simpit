@@ -29,8 +29,8 @@ constexpr ValueID LcdModeLayout[MODE_COUNT][NUM_DISPLAYS][4] = { //4 is de max l
     {
     /*LCD_LBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
     /*LCD_LSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
-    /*LCD_RBIG*/{VAL_AP,       VAL_PE,     VAL_T_AP,       VAL_T_PE},
-    /*LCD_RSMALL*/{VAL_AP,    VAL_T_AP,   VAL_NONE,   VAL_NONE},
+    /*LCD_RBIG*/{VAL_AP,       VAL_PE,     VAL_T_AP,       VAL_V_HOR},
+    /*LCD_RSMALL*/{VAL_NODE_START,    VAL_ALT_RADAR,   VAL_NONE,   VAL_NONE},
     },
 
     //---MODE_LANDING---
@@ -76,8 +76,8 @@ void invalidateDisplays() {     // forceert volledige redraw (voor na mode-chang
 }
 
 void initOutput(){
-    //initialize comms
-    Wire.begin();
+    //empty display buffer
+    invalidateDisplays();
 
     //initialize LCD's
     for (uint8_t i = 0; i<NUM_DISPLAYS; i++) {
@@ -100,6 +100,8 @@ void initOutput(){
             lcdPresent[i] = false;
         }
     }
+    //setclock
+    Wire.setClock(I2C_CLOCK); //dit is nodig omdat de lcd.init functie intern de clock weer terugzet
     //empty LCD's
     invalidateDisplays();
 }
