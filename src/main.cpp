@@ -5,6 +5,7 @@
 #include "LcdOutput.h"
 #include "Config.h"
 #include "FakeGame.h"
+#include "GameState.h"
 
 //loops
 
