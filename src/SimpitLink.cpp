@@ -19,9 +19,17 @@ static KerbalSimpit MySimpit(Serial);
 void messageHandler(byte messageType, byte msg[], byte msgSize);
 
 const byte channels[] = {
-    //Resources
+    //Resources (all resourceMessage, need ARP in KSP1)
     LF_MESSAGE,
     LF_STAGE_MESSAGE,
+    OX_MESSAGE,
+    OX_STAGE_MESSAGE,
+    SF_MESSAGE,
+    SF_STAGE_MESSAGE,
+    MONO_MESSAGE,
+    XENON_GAS_MESSAGE,
+    XENON_GAS_STAGE_MESSAGE,
+    EVA_MESSAGE,
     ELECTRIC_MESSAGE,
     //Flight info
     ALTITUDE_MESSAGE,
@@ -83,34 +91,54 @@ void SimpitGetInfo(){
 
 };
 
+// All resource channels send the same resourceMessage, so one helper stores them.
+// total/available are references to the GameState fields to fill.
+static void storeResource(byte msg[], byte msgSize, float& total, float& available) {
+    //check of de message wel volledig is aangekomen
+    if (msgSize == sizeof(resourceMessage)) {
+        resourceMessage m = parseMessage<resourceMessage>(msg);
+        total = m.total;
+        available = m.available;
+    }
+}
+
 void messageHandler(byte messageType, byte msg[], byte msgSize) {
     lastHeard = millis(); //even noteren dat KSP verbonden is
     switch(messageType) {
 
         //Resources
         case LF_MESSAGE:
-            //check of de message wel volledig is aangekomen
-            if (msgSize == sizeof(resourceMessage)) {
-                resourceMessage m = parseMessage<resourceMessage>(msg);
-                game.liquidFuel_total = m.total;
-                game.liquidFuel_available = m.available;
-            }
+            storeResource(msg, msgSize, game.liquidFuel_total, game.liquidFuel_available);
             break;
-
         case LF_STAGE_MESSAGE:
-            if (msgSize == sizeof(resourceMessage)) {
-                resourceMessage m = parseMessage<resourceMessage>(msg);
-                game.liquidFuelStage_total = m.total;
-                game.liquidFuelStage_available = m.available;
-            }
+            storeResource(msg, msgSize, game.liquidFuelStage_total, game.liquidFuelStage_available);
             break;
-
+        case OX_MESSAGE:
+            storeResource(msg, msgSize, game.oxidizer_total, game.oxidizer_available);
+            break;
+        case OX_STAGE_MESSAGE:
+            storeResource(msg, msgSize, game.oxidizerStage_total, game.oxidizerStage_available);
+            break;
+        case SF_MESSAGE:
+            storeResource(msg, msgSize, game.solidFuel_total, game.solidFuel_available);
+            break;
+        case SF_STAGE_MESSAGE:
+            storeResource(msg, msgSize, game.solidFuelStage_total, game.solidFuelStage_available);
+            break;
+        case MONO_MESSAGE:
+            storeResource(msg, msgSize, game.monopropellant_total, game.monopropellant_available);
+            break;
+        case XENON_GAS_MESSAGE:
+            storeResource(msg, msgSize, game.xenon_total, game.xenon_available);
+            break;
+        case XENON_GAS_STAGE_MESSAGE:
+            storeResource(msg, msgSize, game.xenonStage_total, game.xenonStage_available);
+            break;
+        case EVA_MESSAGE:
+            storeResource(msg, msgSize, game.evaPropellant_total, game.evaPropellant_available);
+            break;
         case ELECTRIC_MESSAGE:
-            if (msgSize == sizeof(resourceMessage)) {
-                resourceMessage m = parseMessage<resourceMessage>(msg);
-                game.electricCharge_total = m.total;
-                game.electricCharge_available = m.available;
-            }
+            storeResource(msg, msgSize, game.electricCharge_total, game.electricCharge_available);
             break;
 
 

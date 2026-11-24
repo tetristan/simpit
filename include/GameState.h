@@ -20,14 +20,20 @@ struct GameState{
     float oxidizer_available;
     float oxidizerStage_total;
     float oxidizerStage_available;
+    float solidFuel_total;
+    float solidFuel_available;
+    float solidFuelStage_total;
+    float solidFuelStage_available;
     float xenon_total;
     float xenon_available;
-    float xenonStage_total; //monopropellant voor vessels
-    float xenonStage_available; //^
+    float xenonStage_total;
+    float xenonStage_available;
     float electricCharge_total;
     float electricCharge_available;
-    float monopropellant_total; //specifiek voor EVA
+    float monopropellant_total;     // monopropellant of the vessel
     float monopropellant_available; // ^
+    float evaPropellant_total;      // only while on EVA (KSP1)
+    float evaPropellant_available;  // ^
 
     //flight-info
     float altitude_sealevel;

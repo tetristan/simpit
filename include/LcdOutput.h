@@ -52,7 +52,7 @@ struct Field{
     ValueID line2;
 };
 
-void initOutput();
+void initLcd();
 void displayUpdate();
 
 //test fucties

@@ -37,13 +37,32 @@ const ValueDef valueDefs[] = {
     {"NdBT",  KIND_TIME},       //NODE_BT
     {"NdTot", KIND_SPEED},      //NODE_DVTOT
 
-    {"t-brn", KIND_TIME},       //node_timeTo
+    {"t-brn", KIND_TIME},       //NODE_START
     {"V-Hor", KIND_SPEED},      //V_HOR
+    {"TTI",   KIND_TIME},       //TTI (not computed yet, isValid = false)
+
+    {"LF",    KIND_PERCENT},    //R_LF
+    {"LF-S",  KIND_PERCENT},    //R_LF_S
+    {"Ox",    KIND_PERCENT},    //R_OX
+    {"Ox-S",  KIND_PERCENT},    //R_OX_S
+    {"SF",    KIND_PERCENT},    //R_SF
+    {"SF-S",  KIND_PERCENT},    //R_SF_S
+    {"Mono",  KIND_PERCENT},    //R_MONO
+    {"Xe",    KIND_PERCENT},    //R_XENON
+    {"Xe-S",  KIND_PERCENT},    //R_XENON_S
+    {"EVA",   KIND_PERCENT},    //R_EVA
+    {"EC",    KIND_PERCENT},    //R_EC
 };
 static_assert(sizeof(valueDefs) / sizeof(valueDefs[0]) == VAL_COUNT,
               "valueDefs out of sync with ValueID");
 
 // functies
+
+// fill level in % (0-100). Returns 0 for an empty/absent tank; isValid() catches that case.
+static float resourcePercent(float available, float total){
+    if (total <= 0.0f) return 0.0f;
+    return available / total * 100.0f;
+}
 
 float getValue(ValueID id){
     switch (id) {
@@ -113,6 +132,33 @@ float getValue(ValueID id){
             return game.node_startBurnIn;
         case VAL_V_HOR:
             return game.velocity_horizontal;
+        case VAL_TTI:
+            return 0.0f;    // TODO: updateTimeToImpact() isn't written yet
+
+            //resources: fill level in %
+        case VAL_R_LF:
+            return resourcePercent(game.liquidFuel_available, game.liquidFuel_total);
+        case VAL_R_LF_S:
+            return resourcePercent(game.liquidFuelStage_available, game.liquidFuelStage_total);
+        case VAL_R_OX:
+            return resourcePercent(game.oxidizer_available, game.oxidizer_total);
+        case VAL_R_OX_S:
+            return resourcePercent(game.oxidizerStage_available, game.oxidizerStage_total);
+        case VAL_R_SF:
+            return resourcePercent(game.solidFuel_available, game.solidFuel_total);
+        case VAL_R_SF_S:
+            return resourcePercent(game.solidFuelStage_available, game.solidFuelStage_total);
+        case VAL_R_MONO:
+            return resourcePercent(game.monopropellant_available, game.monopropellant_total);
+        case VAL_R_XENON:
+            return resourcePercent(game.xenon_available, game.xenon_total);
+        case VAL_R_XENON_S:
+            return resourcePercent(game.xenonStage_available, game.xenonStage_total);
+        case VAL_R_EVA:
+            return resourcePercent(game.evaPropellant_available, game.evaPropellant_total);
+        case VAL_R_EC:
+            return resourcePercent(game.electricCharge_available, game.electricCharge_total);
+
         case VAL_COUNT:
             return 0.0f;
     }
@@ -131,7 +177,24 @@ bool isValid(ValueID id) {
         case VAL_TGT_VPITCH:
             return game.hasTarget;
 
-        case VAL_AP:            //fallthrough
+            // not computed yet
+        case VAL_TTI:
+            return false;
+
+            // resources: only valid if the vessel/stage actually has that resource
+        case VAL_R_LF:      return game.liquidFuel_total > 0.0f;
+        case VAL_R_LF_S:    return game.liquidFuelStage_total > 0.0f;
+        case VAL_R_OX:      return game.oxidizer_total > 0.0f;
+        case VAL_R_OX_S:    return game.oxidizerStage_total > 0.0f;
+        case VAL_R_SF:      return game.solidFuel_total > 0.0f;
+        case VAL_R_SF_S:    return game.solidFuelStage_total > 0.0f;
+        case VAL_R_MONO:    return game.monopropellant_total > 0.0f;
+        case VAL_R_XENON:   return game.xenon_total > 0.0f;
+        case VAL_R_XENON_S: return game.xenonStage_total > 0.0f;
+        case VAL_R_EVA:     return game.evaPropellant_total > 0.0f;
+        case VAL_R_EC:      return game.electricCharge_total > 0.0f;
+
+        case VAL_AP:           //fallthrough
         case VAL_T_AP:
             if(game.apoapsis <0){
                 return false;

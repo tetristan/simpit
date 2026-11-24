@@ -7,6 +7,7 @@
 #include "FakeGame.h"
 #include "GameState.h"
 #include "initI2C.h"
+#include "SimpitOutput.h"
 
 //loops
 
@@ -25,6 +26,7 @@ void setup()
 
     Serial.begin(115200);
     initI2C(); //moet als eerste, want i2c is nodig voor de volgende functies
+    initLcd();
     initOutput();
     initSimpit(); //deze als laatste omdat deze bij gebrek aan handshake de rest van de loop blokkeert. Ook omdat de LCD's nodig zijn om weer te geven of de connectie is geslaagd
 }

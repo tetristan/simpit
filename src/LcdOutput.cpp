@@ -12,10 +12,10 @@
 // hardware variables
 /// LCD's
 LcdUnit lcdUnits[] = {
-    LiquidCrystal_I2C(0x25, 20, 4), 0x25, 20, 4, "Left Big",
-    LiquidCrystal_I2C(0x24, 16, 2), 0x24, 16, 2, "Left small",
-    LiquidCrystal_I2C(0x27, 20, 4), 0x27, 20, 4, "Right big",
-    LiquidCrystal_I2C(0x26, 16, 2), 0x26, 16, 2, "Right small",
+    LiquidCrystal_I2C(0x24, 20, 4), 0x24, 20, 4, "Left Big",
+    LiquidCrystal_I2C(0x25, 16, 2), 0x25, 16, 2, "Left small",
+    LiquidCrystal_I2C(0x26, 20, 4), 0x26, 20, 4, "Right big",
+    LiquidCrystal_I2C(0x27, 16, 2), 0x27, 16, 2, "Right small",
 };
 /// telt de grootte van de array
 const uint8_t NUM_DISPLAYS = sizeof(lcdUnits) / sizeof(lcdUnits[0]);
@@ -27,7 +27,7 @@ bool lcdPresent[LCD_COUNT];
 constexpr ValueID LcdModeLayout[MODE_COUNT][NUM_DISPLAYS][4] = { //4 is de max line-count
     //---MODE_ORBIT---
     {
-    /*LCD_LBIG*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
+    /*LCD_LBIG*/{VAL_DV_TOT,    VAL_DV_STG,   VAL_BT_TOT,   VAL_BT_STG},
     /*LCD_LSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
     /*LCD_RBIG*/{VAL_AP,       VAL_PE,     VAL_T_AP,       VAL_V_HOR},
     /*LCD_RSMALL*/{VAL_NODE_START,    VAL_ALT_RADAR,   VAL_NONE,   VAL_NONE},
@@ -75,7 +75,7 @@ void invalidateDisplays() {     // forceert volledige redraw (voor na mode-chang
     memset(lastDrawn, 0, sizeof(lastDrawn));
 }
 
-void initOutput(){
+void initLcd(){
     //empty display buffer
     invalidateDisplays();
 

@@ -14,8 +14,24 @@ void fakeGameInit() {
     game.liquidFuel_available      = 1187.5f;
     game.liquidFuelStage_total     = 720.0f;    // current stage only
     game.liquidFuelStage_available = 263.4f;
+    game.oxidizer_total            = 3960.0f;   // LF:Ox is 9:11 in KSP
+    game.oxidizer_available        = 1451.4f;
+    game.oxidizerStage_total       = 880.0f;
+    game.oxidizerStage_available   = 321.9f;
+    game.solidFuel_total           = 0.0f;      // boosters already dropped → tests "---"
+    game.solidFuel_available       = 0.0f;
+    game.solidFuelStage_total      = 0.0f;
+    game.solidFuelStage_available  = 0.0f;
+    game.monopropellant_total      = 120.0f;
+    game.monopropellant_available  = 9.6f;      // 8%: tests a nearly empty gauge
+    game.xenon_total               = 0.0f;      // no ion engine → tests "---"
+    game.xenon_available           = 0.0f;
+    game.xenonStage_total          = 0.0f;
+    game.xenonStage_available      = 0.0f;
+    game.evaPropellant_total       = 0.0f;      // not on EVA → tests "---"
+    game.evaPropellant_available   = 0.0f;
     game.electricCharge_total      = 150.0f;
-    game.electricCharge_available  = 112.5f;
+    game.electricCharge_available  = 112.5f;    // 75%
 
     // flight info: climbing through 62 km, coasting to a 85 km Ap
     game.altitude_sealevel = 62480.0f;   // m

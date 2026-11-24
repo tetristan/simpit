@@ -37,6 +37,19 @@ enum ValueID : uint8_t {
 
     VAL_NODE_START, //31 - time to start burn, kind_time
     VAL_V_HOR,      //32 - horizontal speed
+    VAL_TTI,        //33 - time to impact
+
+    VAL_R_LF,       //34 - Resource: LiquidFuel
+    VAL_R_LF_S,     //35 - Resource: LiquidFuel per stage
+    VAL_R_OX,       //36 - Resource: Oxidizer
+    VAL_R_OX_S,     //37 - Resource: Oxidizer per stage
+    VAL_R_SF,       //38 - Resource: Solid fuel
+    VAL_R_SF_S,     //39 - Resource: Solid fuel per stage
+    VAL_R_MONO,     //40 - Resource: monopropellant of vessel
+    VAL_R_XENON,    //41 - Resource: xenon fuel
+    VAL_R_XENON_S,  //42 - Resource: xenon fuel per stage
+    VAL_R_EVA,      //43 - Resource: EVA propellant
+    VAL_R_EC,       //44 - Resource: electric charge of vessel
 
     VAL_COUNT       // het is de laatste, dus deze staat altijd gelijk aan d ehoeveelheid waarden in de ENUM, handig voor for-loops en andere functies die heir doorheen moeten loopen.
 };
