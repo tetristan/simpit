@@ -11,7 +11,7 @@ static void writeNumber(float value, uint8_t decimals, const char* unit, char* o
     char num[VALUE_TEXT_SIZE];
     dtostrf(value, 0, decimals, num);
     snprintf(out, outSize, "%s%s", num, unit);
-    } //interne helperfunctie voor de andere covert functies
+} //interne helperfunctie voor de andere covert functies
 
 void formatDistance(float meters, char* out, size_t outSize){
     if (isnan(meters) || isinf(meters)) { //checkt of de value wel valid is
@@ -47,7 +47,7 @@ void formatDistance(float meters, char* out, size_t outSize){
     if (d > 9999.9f) d = 9999.9f;
 
     writeNumber(d, decimals, unit, out, outSize);
-    };
+};
 
 
 void formatTime(float seconds, char* out, size_t outSize) {
@@ -107,6 +107,10 @@ void formatRatio(float ratio, char* out, size_t outSize) {
     writeNumber(ratio, 2, "", out, outSize);
 }
 
+void formatBool(float value, char* out, size_t outSize) {
+    snprintf(out, outSize, "%s", (value >= 1.0f) ? "ON" : "OFF");   // 0.5 (idle) is ook OFF
+}
+
 void formatValue(Kind kind, float value, char* out, size_t outSize) { //functie om alles te combineren.
     out[0] = '\0';   // eerst leegmaken
 
@@ -135,6 +139,9 @@ void formatValue(Kind kind, float value, char* out, size_t outSize) { //functie 
             break;
         case KIND_RATIO:
             formatRatio(value, out, outSize);
+            break;
+        case KIND_BOOL:
+            formatBool(value, out, outSize);
             break;
     }
 }

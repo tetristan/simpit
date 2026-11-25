@@ -46,6 +46,6 @@ void loop()
     SetControls(); //hier vergelijkt ie de inputs met de gamestate, en maakt hij de nieuwe Controlstate
     OutputControls(); //hier roept ie de SimpitLink om de Controlstate naar de game te schrijven, en om de gauges en displays aan te drijven (al split ik die miss later nog)
     displayUpdate();
-    gaugeOutput();
+    pwmOutput();
     printDebugToKSP();
 }

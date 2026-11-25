@@ -2,6 +2,7 @@
 #include "GameState.h"
 #include "Config.h"
 #include "FakeGame.h"
+#include "KerbalSimpitMessageTypes.h"   // SAS_ACTION, AP_PROGRADE, ...
 
 // Arrays //labels max 5 chars
 const ValueDef valueDefs[] = {
@@ -52,6 +53,37 @@ const ValueDef valueDefs[] = {
     {"Xe-S",  KIND_PERCENT},    //R_XENON_S
     {"EVA",   KIND_PERCENT},    //R_EVA
     {"EC",    KIND_PERCENT},    //R_EC
+
+    {"SAS",   KIND_BOOL},       //AG_SAS
+    {"RCS",   KIND_BOOL},       //AG_RCS
+    {"Gear",  KIND_BOOL},       //AG_GEAR
+    {"Light", KIND_BOOL},       //AG_LIGHTS
+    {"Brake", KIND_BOOL},       //AG_BRAKES
+    {"Abort", KIND_BOOL},       //AG_ABORT
+
+    {"SStab", KIND_BOOL},       //SAS_STAB
+    {"SPro",  KIND_BOOL},       //SAS_PROGRADE
+    {"SRetr", KIND_BOOL},       //SAS_RETROGRADE
+    {"SNorm", KIND_BOOL},       //SAS_NORMAL
+    {"SANrm", KIND_BOOL},       //SAS_ANTINORMAL
+    {"SRIn",  KIND_BOOL},       //SAS_RADIAL_IN
+    {"SROut", KIND_BOOL},       //SAS_RADIAL_OUT
+    {"STgt",  KIND_BOOL},       //SAS_TARGET
+    {"SATgt", KIND_BOOL},       //SAS_ANTITARGET
+    {"SMnv",  KIND_BOOL},       //SAS_MANEUVER
+
+    {"AG1",   KIND_BOOL},       //CAG_1
+    {"AG2",   KIND_BOOL},       //CAG_2
+    {"AG3",   KIND_BOOL},       //CAG_3
+    {"AG4",   KIND_BOOL},       //CAG_4
+    {"AG5",   KIND_BOOL},       //CAG_5
+    {"AG6",   KIND_BOOL},       //CAG_6
+    {"AG7",   KIND_BOOL},       //CAG_7
+    {"AG8",   KIND_BOOL},       //CAG_8
+    {"AG9",   KIND_BOOL},       //CAG_9
+    {"AG10",  KIND_BOOL},       //CAG_10
+
+    {"Comm",  KIND_PERCENT},    //COMMNET
 };
 static_assert(sizeof(valueDefs) / sizeof(valueDefs[0]) == VAL_COUNT,
               "valueDefs out of sync with ValueID");
@@ -62,6 +94,33 @@ static_assert(sizeof(valueDefs) / sizeof(valueDefs[0]) == VAL_COUNT,
 static float resourcePercent(float available, float total){
     if (total <= 0.0f) return 0.0f;
     return available / total * 100.0f;
+}
+
+// LED-states: 0 = donker (niet beschikbaar), 0.5 = idle (beschikbaar maar uit), 1 = aan
+static const float LED_OFF  = 0.0f;
+static const float LED_IDLE = 0.5f;
+static const float LED_ON   = 1.0f;
+
+// gewone action groups zijn altijd beschikbaar: aan of idle
+static float agState(uint8_t mask){
+    return (game.actionGroups & mask) ? LED_ON : LED_IDLE;
+}
+
+static bool sasModeAvailable(uint8_t mode){
+    return (game.sasAvailable & (1 << mode)) != 0;
+}
+
+// SAS-modes: aan als het de huidige mode is, idle als beschikbaar, anders donker
+static float sasModeState(uint8_t mode){
+    if (game.sasMode == mode) return LED_ON;    // sasMode 255 = SAS uit, matcht dus nooit
+    if (sasModeAvailable(mode)) return LED_IDLE;
+    return LED_OFF;
+}
+
+// custom action group n, zelfde bit-indeling als cagStatusMessage::is_action_activated()
+static float cagState(uint8_t n){
+    bool on = (game.cag[n / 8] >> (n % 8)) & 1;
+    return on ? LED_ON : LED_IDLE;
 }
 
 float getValue(ValueID id){
@@ -159,6 +218,43 @@ float getValue(ValueID id){
         case VAL_R_EC:
             return resourcePercent(game.electricCharge_available, game.electricCharge_total);
 
+            //action groups
+        case VAL_AG_SAS:         return agState(SAS_ACTION);
+        case VAL_AG_RCS:         return agState(RCS_ACTION);
+        case VAL_AG_GEAR:        return agState(GEAR_ACTION);
+        case VAL_AG_LIGHTS:      return agState(LIGHT_ACTION);
+        case VAL_AG_BRAKES:      return agState(BRAKES_ACTION);
+        case VAL_AG_ABORT:       return agState(ABORT_ACTION);
+
+        //SAS modes
+        case VAL_SAS_STAB:       return sasModeState(AP_STABILITYASSIST);
+        case VAL_SAS_PROGRADE:   return sasModeState(AP_PROGRADE);
+        case VAL_SAS_RETROGRADE: return sasModeState(AP_RETROGRADE);
+        case VAL_SAS_NORMAL:     return sasModeState(AP_NORMAL);
+        case VAL_SAS_ANTINORMAL: return sasModeState(AP_ANTINORMAL);
+        case VAL_SAS_RADIAL_IN:  return sasModeState(AP_RADIALIN);
+        case VAL_SAS_RADIAL_OUT: return sasModeState(AP_RADIALOUT);
+        case VAL_SAS_TARGET:     return sasModeState(AP_TARGET);
+        case VAL_SAS_ANTITARGET: return sasModeState(AP_ANTITARGET);
+        case VAL_SAS_MANEUVER:   return sasModeState(AP_MANEUVER);
+
+        //custom action groups (CHECK IN KSP: is AG1 bit 1 of bit 0?)
+        case VAL_CAG_1:          return cagState(1);
+        case VAL_CAG_2:          return cagState(2);
+        case VAL_CAG_3:          return cagState(3);
+        case VAL_CAG_4:          return cagState(4);
+        case VAL_CAG_5:          return cagState(5);
+        case VAL_CAG_6:          return cagState(6);
+        case VAL_CAG_7:          return cagState(7);
+        case VAL_CAG_8:          return cagState(8);
+        case VAL_CAG_9:          return cagState(9);
+        case VAL_CAG_10:         return cagState(10);
+
+        //commnet strength
+        case VAL_COMMNET:
+            return game.commNetSignalPercent;
+
+        //voor makkelijk tellen totaal, alle andere values hierboven.
         case VAL_COUNT:
             return 0.0f;
     }
@@ -193,6 +289,18 @@ bool isValid(ValueID id) {
         case VAL_R_XENON_S: return game.xenonStage_total > 0.0f;
         case VAL_R_EVA:     return game.evaPropellant_total > 0.0f;
         case VAL_R_EC:      return game.electricCharge_total > 0.0f;
+
+        // SAS modes: niet beschikbaar → LCD toont "---"
+        case VAL_SAS_STAB:       return sasModeAvailable(AP_STABILITYASSIST);
+        case VAL_SAS_PROGRADE:   return sasModeAvailable(AP_PROGRADE);
+        case VAL_SAS_RETROGRADE: return sasModeAvailable(AP_RETROGRADE);
+        case VAL_SAS_NORMAL:     return sasModeAvailable(AP_NORMAL);
+        case VAL_SAS_ANTINORMAL: return sasModeAvailable(AP_ANTINORMAL);
+        case VAL_SAS_RADIAL_IN:  return sasModeAvailable(AP_RADIALIN);
+        case VAL_SAS_RADIAL_OUT: return sasModeAvailable(AP_RADIALOUT);
+        case VAL_SAS_TARGET:     return sasModeAvailable(AP_TARGET);
+        case VAL_SAS_ANTITARGET: return sasModeAvailable(AP_ANTITARGET);
+        case VAL_SAS_MANEUVER:   return sasModeAvailable(AP_MANEUVER);
 
         case VAL_AP:           //fallthrough
         case VAL_T_AP:

@@ -1,6 +1,7 @@
 #include "Config.h"
 #include "FakeGame.h"
 #include "GameState.h"
+#include "KerbalSimpitMessageTypes.h"
 
 #ifdef FAKE_GAME
 
@@ -88,6 +89,16 @@ void fakeGameInit() {
     game.node_deltaVTotal = 682.0f;      // m/s, only one node
     game.node_heading     = 90.0f;
     game.node_pitch       = 0.0f;
+
+    // buttons/LEDs: SAS + lampen aan, rest idle
+    game.actionGroups = SAS_ACTION | LIGHT_ACTION;
+    game.sasMode      = AP_PROGRADE;
+    // level-2 piloot: geen target/anti-target/maneuver → test de donkere LED's
+    game.sasAvailable = (1 << AP_STABILITYASSIST) | (1 << AP_PROGRADE) | (1 << AP_RETROGRADE)
+    | (1 << AP_NORMAL) | (1 << AP_ANTINORMAL)
+    | (1 << AP_RADIALIN) | (1 << AP_RADIALOUT);
+    game.cag[0] = (1 << 1) | (1 << 3);   // AG1 en AG3 aan
+    game.cag[1] = 0;
 }
 
 void fakeGameUpdate() {

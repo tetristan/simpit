@@ -1,16 +1,14 @@
 #pragma once
-# include "Values.h"
+#include "Values.h"
 #include <stdint.h>
 #include <Adafruit_PWMServoDriver.h>
 
 //enums
-
-// enum GaugeID uint8_t{
-//     GAUGE_LF,
-//     GAUGE_LF_S,
-//     GAUGE_X
-//     GAUGE_HEAT,
-// };
+enum PinType : uint8_t {
+    PIN_NONE,       // kanaal niet in gebruik (gat in de tabel)
+    PIN_GAUGE,      // analoge meter: lineair van valueMin naar valueMax
+    PIN_LED,        // LED: 0 = uit, 0.5 = valueMin (idle), 1 = valueMax (aan)
+};
 
 //structs
 ///PWM-ding en
@@ -22,16 +20,15 @@ struct PwmController{
 };
 
 struct PwmPin{
+    PinType type;           // gauge of LED, bepaalt hoe de waarde naar PWM gaat
     ValueID gameValue;      // een VALUE_ID zodat de goede waarde op de gauges gezet kan worden
-    uint16_t value;         // waarde tussen 0 en 4095, die de PWM controller toe kan wijzen. Voor de gauges wordt dit via value geregeld, maar voor LED's is dit de brightness
-    uint16_t valueMin;      //minimale waarde die de LED mag worden.
-                                //Voor gauges interpolate hij dit om volle range te krijgen.
-                                //Voor LED's kan dit een brightness-value zijn en een min voor als ze 'idle' staan
-    uint16_t valueMax;      //minimale waarde die de LED mag worden.
-                                //Voor gauges interpolate hij dit om volle range te krijgen.
-                                //Voor LED's kan dit een max-brightness-value zijn, zodat mijn ogen er niet uitbranden als het ding aanstaat.
+    float inputMax;         // alleen voor gauges: welke game-waarde 'vol' is (100 voor procenten)
+    uint16_t value;         // laatst geschreven PWM-waarde (0-4095), zodat we alleen bij verandering over I2C schrijven
+    uint16_t valueMin;      //Gauges: PWM bij 0 (kalibratie).
+    //LED's: idle-brightness (beschikbaar maar uit)
+    uint16_t valueMax;      //Gauges: PWM bij inputMax (kalibratie).
+    //LED's: max-brightness, zodat mijn ogen er niet uitbranden als het ding aanstaat.
 };
 
 void initOutput();
-void ledOutput();
-void gaugeOutput();
+void pwmOutput();       // vervangt gaugeOutput(): doet gauges en LED's in één loop

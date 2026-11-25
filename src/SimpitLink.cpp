@@ -44,6 +44,10 @@ const byte channels[] = {
     BURNTIME_MESSAGE,
     TEMP_LIMIT_MESSAGE,
     FLIGHT_STATUS_MESSAGE,
+    //Buttons/LEDs
+    ACTIONSTATUS_MESSAGE,
+    SAS_MODE_INFO_MESSAGE,
+    CAGSTATUS_MESSAGE,
     //Navigation
     TARGETINFO_MESSAGE,
     MANEUVER_MESSAGE
@@ -232,6 +236,29 @@ void messageHandler(byte messageType, byte msg[], byte msgSize) {
                 game.situation = m.vesselSituation;
                 game.currentStage = (float)m.currentStage;
                 game.commNetSignalPercent = (float)m.commNetSignalStrenghPercentage; // typo is in the library
+            }
+            break;
+
+            //Buttons/LEDs
+        case ACTIONSTATUS_MESSAGE:
+            if (msgSize == 1) {
+                game.actionGroups = msg[0];     // bitmask: SAS_ACTION, RCS_ACTION, ...
+            }
+            break;
+
+        case SAS_MODE_INFO_MESSAGE:
+            if (msgSize == sizeof(SASInfoMessage)) {
+                SASInfoMessage m = parseMessage<SASInfoMessage>(msg);
+                game.sasMode = m.currentSASMode;        // 255 = SAS uit
+                game.sasAvailable = m.SASModeAvailability;
+            }
+            break;
+
+        case CAGSTATUS_MESSAGE:
+            if (msgSize == sizeof(cagStatusMessage)) {
+                cagStatusMessage m = parseMessage<cagStatusMessage>(msg);
+                game.cag[0] = m.status[0];      // alleen de eerste 16 groepen bewaren
+                game.cag[1] = m.status[1];
             }
             break;
 

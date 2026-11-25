@@ -51,6 +51,37 @@ enum ValueID : uint8_t {
     VAL_R_EVA,      //43 - Resource: EVA propellant
     VAL_R_EC,       //44 - Resource: electric charge of vessel
 
+    // LED-states: getValue() geeft 0 = donker (niet beschikbaar), 0.5 = idle (beschikbaar, uit), 1 = aan
+    VAL_AG_SAS,     //45 - action group: SAS aan
+    VAL_AG_RCS,     //46 - action group: RCS aan
+    VAL_AG_GEAR,    //47 - action group: landingsgestel
+    VAL_AG_LIGHTS,  //48 - action group: lampen
+    VAL_AG_BRAKES,  //49 - action group: remmen
+    VAL_AG_ABORT,   //50 - action group: abort
+
+    VAL_SAS_STAB,       //51 - SAS mode: stability assist
+    VAL_SAS_PROGRADE,   //52 - SAS mode: prograde
+    VAL_SAS_RETROGRADE, //53 - SAS mode: retrograde
+    VAL_SAS_NORMAL,     //54 - SAS mode: normal
+    VAL_SAS_ANTINORMAL, //55 - SAS mode: antinormal
+    VAL_SAS_RADIAL_IN,  //56 - SAS mode: radial in
+    VAL_SAS_RADIAL_OUT, //57 - SAS mode: radial out
+    VAL_SAS_TARGET,     //58 - SAS mode: target
+    VAL_SAS_ANTITARGET, //59 - SAS mode: anti-target
+    VAL_SAS_MANEUVER,   //60 - SAS mode: maneuver
+
+    VAL_CAG_1,      //61 - custom action group 1
+    VAL_CAG_2,      //62
+    VAL_CAG_3,      //63
+    VAL_CAG_4,      //64
+    VAL_CAG_5,      //65
+    VAL_CAG_6,      //66
+    VAL_CAG_7,      //67
+    VAL_CAG_8,      //68
+    VAL_CAG_9,      //69
+    VAL_CAG_10,     //70 - custom action group 10
+    VAL_COMMNET,    //71 signal strength
+
     VAL_COUNT       // het is de laatste, dus deze staat altijd gelijk aan d ehoeveelheid waarden in de ENUM, handig voor for-loops en andere functies die heir doorheen moeten loopen.
 };
 
@@ -61,7 +92,8 @@ enum Kind :uint8_t {
     KIND_SPEED,          //3
     KIND_ANGLE,          //4
     KIND_PERCENT,        //5
-    KIND_RATIO           //6
+    KIND_RATIO,          //6
+    KIND_BOOL            //7 - ON/OFF (waarde >= 1 is ON)
 };
 
 // STRUCTS
