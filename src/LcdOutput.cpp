@@ -1,5 +1,4 @@
 #include "LcdOutput.h"
-#include "LiquidCrystal_I2C.h"
 #include "GameState.h"
 #include "Values.h"
 #include "Format.h"
@@ -10,12 +9,12 @@
 #include <stdint.h>
 
 // hardware variables
-/// LCD's
+/// LCD's<
 LcdUnit lcdUnits[] = {
-    LiquidCrystal_I2C(0x24, 20, 4), 0x24, 20, 4, "Left Big",
-    LiquidCrystal_I2C(0x25, 16, 2), 0x25, 16, 2, "Left small",
-    LiquidCrystal_I2C(0x26, 20, 4), 0x26, 20, 4, "Right big",
-    LiquidCrystal_I2C(0x27, 16, 2), 0x27, 16, 2, "Right small",
+    { hd44780_I2Cexp(0x24), 0x24, 20, 4, "Left Big"    },
+    { hd44780_I2Cexp(0x25), 0x25, 16, 2, "Left small"  },
+    { hd44780_I2Cexp(0x26), 0x26, 20, 4, "Right big"   },
+    { hd44780_I2Cexp(0x27), 0x27, 16, 2, "Right small" },
 };
 /// telt de grootte van de array
 const uint8_t NUM_DISPLAYS = sizeof(lcdUnits) / sizeof(lcdUnits[0]);
@@ -27,7 +26,7 @@ bool lcdPresent[LCD_COUNT];
 constexpr ValueID LcdModeLayout[MODE_COUNT][NUM_DISPLAYS][4] = { //4 is de max line-count
     //---MODE_ORBIT---
     {
-    /*LCD_LBIG*/{VAL_DV_TOT,    VAL_DV_STG,   VAL_BT_TOT,   VAL_BT_STG},
+    /*LCD_LBIG*/{VAL_DV_TOT,    VAL_DV_STG,   VAL_R_SF,   VAL_R_SF_S},
     /*LCD_LSMALL*/{VAL_NONE,    VAL_NONE,   VAL_NONE,   VAL_NONE},
     /*LCD_RBIG*/{VAL_AP,       VAL_PE,     VAL_T_AP,       VAL_V_HOR},
     /*LCD_RSMALL*/{VAL_NODE_START,    VAL_ALT_RADAR,   VAL_NONE,   VAL_NONE},
@@ -83,22 +82,24 @@ void initLcd(){
     for (uint8_t i = 0; i<NUM_DISPLAYS; i++) {
         LcdUnit& u = lcdUnits[i];
 
+        lcdPresent[i] = false;
+
+        //check adres zonder library
         Wire.beginTransmission(u.address);
-        uint8_t err = Wire.endTransmission();
-        if (err==0) {
-            lcdPresent[i] = true;
-            u.lcd.init();
-            u.lcd.backlight();
-            u.lcd.clear();
-            u.lcd.print(u.label);
-            u.lcd.setCursor(12, 0);
-            u.lcd.print("0x");
-            u.lcd.setCursor(14, 0);
-            u.lcd.print(u.address, HEX);
-        }
-        else {
-            lcdPresent[i] = false;
-        }
+        if (Wire.endTransmission() != 0) continue;
+
+        //begin geeft 0 terug als het is gelukt
+        int status = u.lcd.begin(u.cols, u.rows);
+        if (status != 0) continue;
+
+        lcdPresent[i] = true;
+        u.lcd.backlight();
+        u.lcd.clear();
+        u.lcd.print(u.label);
+        u.lcd.setCursor(u.cols - 4, 0);     // adres rechtsboven, past op 16 en 20 kolommen
+        u.lcd.print("0x");
+        u.lcd.print(u.address, HEX);
+
     }
     //setclock
     Wire.setClock(I2C_CLOCK); //dit is nodig omdat de lcd.init functie intern de clock weer terugzet

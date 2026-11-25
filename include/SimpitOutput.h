@@ -1,6 +1,7 @@
 #pragma once
 # include "Values.h"
 #include <stdint.h>
+#include <Adafruit_PWMServoDriver.h>
 
 //enums
 
@@ -15,6 +16,7 @@
 ///PWM-ding en
 
 struct PwmController{
+    Adafruit_PWMServoDriver controller;
     uint8_t address;
     uint8_t id;
 };

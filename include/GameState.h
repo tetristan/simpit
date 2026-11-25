@@ -94,6 +94,11 @@ struct GameState{
     float node_startBurnIn;     // zelf berekenen
     float velocity_horizontal;     // zelf berekenen
 
+    uint8_t actionGroups = 0;   // bitmask: SAS_ACTION, RCS_ACTION, ...
+    uint8_t sasMode      = 255; // 255 = SAS uit. NIET 0, want 0 = stability assist
+    int16_t sasAvailable = 0;   // bitmask: 1 << AP_PROGRADE enz.
+    uint8_t cag[2]       = {0, 0};
+
     // float altitude;
     // bool SASOn;
     // uint32_t lastUpdateMs;

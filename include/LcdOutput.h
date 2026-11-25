@@ -1,7 +1,9 @@
 #pragma once
 
 #include <stdint.h>
-#include "LiquidCrystal_I2C.h"
+#include <Wire.h>
+#include <hd44780.h>                        //moet VOOR de i/o-class
+#include <hd44780ioClass/hd44780_I2Cexp.h>  //i2c-backpack (PCF8574) i/o-class
 #include "Values.h"
 
 //LCD's
@@ -17,15 +19,15 @@ struct LcdDef{
     uint8_t address;
     uint8_t cols;
     uint8_t rows;
-    char* name;
+    const char* name;
 };
 
 struct LcdUnit {
-    LiquidCrystal_I2C lcd;
+    hd44780_I2Cexp lcd;     // het LCD-object leeft in de tabel, altijd via referentie gebruiken
     uint8_t address;
     uint8_t cols;
     uint8_t rows;
-    char* label;
+    const char* label;
 };
 
 //Slots (een slot is een slot voor informatie, dit bestaat uit 2 rijen (omdat values per 2 verpakt zijn). Deze zijn gemaakt omdat ik 6 'slots' heb en sommige displays kunnen 2 waarden laten zien en sommigen 4 (want 2 displays zijn 4 regels ipv 2).)

@@ -2,6 +2,7 @@
 #include "GameState.h"
 #include "KerbalSimpitMessageTypes.h"
 #include "PayloadStructs.h"
+#include "Values.h"
 
 #include <Arduino.h>
 #include <KerbalSimpit.h>
@@ -264,7 +265,6 @@ void messageHandler(byte messageType, byte msg[], byte msgSize) {
 //debug functions
 
 void printDebugToKSP(){
-    MySimpit.printToKSP(String("NODE INFO"));
-    MySimpit.printToKSP(String(game.node_deltaV));
+    MySimpit.printToKSP(String(getValue(VAL_R_SF)));
     return;
 }
