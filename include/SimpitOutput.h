@@ -30,5 +30,13 @@ struct PwmPin{
     //LED's: max-brightness, zodat mijn ogen er niet uitbranden als het ding aanstaat.
 };
 
+// LED-matrix (MAX7219): één regel per LED, positie zoals in de Excel-sheet
+struct MaxLed{
+    ValueID gameValue;      // LED aan als getValue() >= 1 (idle 0.5 telt als uit)
+    uint8_t row;            // 1-8  = DIG0-DIG7
+    char    col;            // 'A'-'H' = SEG A-G, H = DP
+};
+
 void initOutput();
 void pwmOutput();       // vervangt gaugeOutput(): doet gauges en LED's in één loop
+void ledOutput();       // LED-matrix: alleen veranderde rijen worden geschreven

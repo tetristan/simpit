@@ -82,6 +82,32 @@ enum ValueID : uint8_t {
     VAL_CAG_10,     //70 - custom action group 10
     VAL_COMMNET,    //71 signal strength
 
+    // warnings: getValue() geeft 1 = aan, 0 = uit. Berekend in updateWarnings() (GameState.cpp)
+    VAL_WARN_1,      //72 - warning 1
+    VAL_WARN_2,      //73 - warning 2
+    VAL_WARN_3,      //74 - warning 3
+    VAL_WARN_4,      //75 - warning 4
+    VAL_WARN_5,      //76 - warning 5
+    VAL_WARN_6,      //77 - warning 6
+    VAL_WARN_7,      //78 - warning 7
+    VAL_WARN_8,      //79 - warning 8
+    VAL_WARN_9,      //80 - warning 9
+    VAL_WARN_10,     //81 - warning 10
+    VAL_WARN_11,     //82 - warning 11
+    VAL_WARN_12,     //83 - warning 12
+
+    VAL_ABORT_SIGNAL,   //84 - ARM2 "abort now!" (game.abortSignal), 1 = aan, 0 = uit
+
+    // timewarp-balk (cumulatief): TWn aan als timewarpIndex >= n-1. Ruimte: TW1-TW8, atmosfeer: TW1-TW4
+    VAL_TW_1,       //85 - 1x (aan zodra je in flight bent)
+    VAL_TW_2,       //86
+    VAL_TW_3,       //87
+    VAL_TW_4,       //88
+    VAL_TW_5,       //89
+    VAL_TW_6,       //90
+    VAL_TW_7,       //91
+    VAL_TW_8,       //92 - 100000x
+
     VAL_COUNT       // het is de laatste, dus deze staat altijd gelijk aan d ehoeveelheid waarden in de ENUM, handig voor for-loops en andere functies die heir doorheen moeten loopen.
 };
 

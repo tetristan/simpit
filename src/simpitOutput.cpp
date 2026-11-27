@@ -1,6 +1,8 @@
 #include "SimpitOutput.h"
 #include "Values.h"
+#include "Config.h"
 #include <Arduino.h>
+#include <LedControl.h>
 
 //variables
 ///hardware
@@ -57,10 +59,65 @@ PwmPin PwmPins[] = {
 };
 static_assert(sizeof(PwmPins) / sizeof(PwmPins[0]) <= 32, "meer kanalen dan 2 borden aankunnen");
 
+///LED-matrix (MAX7219)
+LedControl ledMatrix(MATRIX_DIN_PIN, MATRIX_CLK_PIN, MATRIX_CS_PIN, 1);   // pins + helderheid in Config.h
+
+// Input-tabel: {gameValue, rij 1-8, kolom 'A'-'H'}, precies zoals de sheet.
+// VAL_NONE = LED blijft uit (nog geen bron).
+MaxLed MaxLeds[] = {
+    // A: joystick (InputState, komt later)
+    {VAL_NONE,          1, 'A'},    // J1
+    {VAL_NONE,          2, 'A'},    // J2
+    {VAL_NONE,          3, 'A'},    // J3
+    {VAL_NONE,          4, 'A'},    // J4
+    // B: mode select (InputState, komt later)
+    {VAL_NONE,          1, 'B'},    // M1
+    {VAL_NONE,          2, 'B'},    // M2
+    {VAL_NONE,          3, 'B'},    // M3
+    {VAL_NONE,          4, 'B'},    // M4
+    {VAL_NONE,          5, 'B'},    // M5
+    // C: arm/abort
+    {VAL_NONE,          1, 'C'},    // ARM1 key switch (InputState, komt later)
+    {VAL_ABORT_SIGNAL,  2, 'C'},    // ARM2 abort now!
+    // D: RCS/SAS
+    {VAL_AG_RCS,        1, 'D'},    // RCS
+    {VAL_AG_SAS,        2, 'D'},    // SAS
+    // E: timewarp 1-8
+    {VAL_TW_1,          1, 'E'},    // TW1  1x
+    {VAL_TW_2,          2, 'E'},    // TW2
+    {VAL_TW_3,          3, 'E'},    // TW3
+    {VAL_TW_4,          4, 'E'},    // TW4
+    {VAL_TW_5,          5, 'E'},    // TW5
+    {VAL_TW_6,          6, 'E'},    // TW6
+    {VAL_TW_7,          7, 'E'},    // TW7
+    {VAL_TW_8,          8, 'E'},    // TW8  100000x
+    // F: timewarp 9-10 (niet in gebruik)
+    {VAL_NONE,          1, 'F'},    // TW9
+    {VAL_NONE,          2, 'F'},    // TW10
+    // G: warnings 1-8
+    {VAL_WARN_1,        1, 'G'},    // W1
+    {VAL_WARN_2,        2, 'G'},    // W2
+    {VAL_WARN_3,        3, 'G'},    // W3
+    {VAL_WARN_4,        4, 'G'},    // W4
+    {VAL_WARN_5,        5, 'G'},    // W5
+    {VAL_WARN_6,        6, 'G'},    // W6
+    {VAL_WARN_7,        7, 'G'},    // W7
+    {VAL_WARN_8,        8, 'G'},    // W8
+    // H: warnings 9-12
+    {VAL_WARN_9,        1, 'H'},    // W9
+    {VAL_WARN_10,       2, 'H'},    // W10
+    {VAL_WARN_11,       3, 'H'},    // W11
+    {VAL_WARN_12,       4, 'H'},    // W12
+};
+
+static uint8_t lastRows[8];         // wat er nu op de chip staat
+static bool    rowsKnown = false;   // false → volgende ledOutput() schrijft alle rijen
+
 //derived constants
 const uint8_t numControllers = sizeof(PwmControllers) / sizeof(PwmControllers[0]);
 const uint8_t numPins        = sizeof(PwmPins) / sizeof(PwmPins[0]);
 const uint8_t CHANNELS_PER_BOARD = 16;
+const uint8_t numMaxLeds     = sizeof(MaxLeds) / sizeof(MaxLeds[0]);
 
 void initOutput(){
     //init PWM drivers
@@ -72,6 +129,12 @@ void initOutput(){
     for (uint8_t i = 0; i < numPins; i++) {
         PwmPins[i].value = 0xFFFF;
     }
+
+    //init LED-matrix
+    ledMatrix.shutdown(0, false);                   // chip start in shutdown → wakker maken
+    ledMatrix.setIntensity(0, MATRIX_INTENSITY);
+    ledMatrix.clearDisplay(0);
+    rowsKnown = false;
 }
 
 // rekent de game-waarde om naar een PWM-waarde (0-4095) voor dit kanaal
@@ -109,4 +172,33 @@ void pwmOutput(){
         PwmControllers[board].controller.setPin(i % CHANNELS_PER_BOARD, pwm);
         p.value = pwm;
     }
+}
+
+// kolom 'A'-'H' → bit in de rij-byte van LedControl.
+// LedControl: bit 7 = DP, bit 6 = SEG A, bit 5 = SEG B ... bit 0 = SEG G.
+// Bedrading: A-G = SEG A-G, H = DP.
+static uint8_t colToMask(char col){
+    if (col == 'H') return 0x80;                    // DP
+    return 0x40 >> (col - 'A');                     // A → 0x40 ... G → 0x01
+}
+
+void ledOutput(){
+    uint8_t rows[8] = {0};
+
+    // rijen opbouwen vanuit de tabel
+    for (uint8_t i = 0; i < numMaxLeds; i++) {
+        const MaxLed &led = MaxLeds[i];
+        if (led.row < 1 || led.row > 8 || led.col < 'A' || led.col > 'H') continue;   // tikfout in de tabel → overslaan
+        if (getValue(led.gameValue) >= 1.0f) {
+            rows[led.row - 1] |= colToMask(led.col);
+        }
+    }
+
+    // alleen veranderde rijen naar de chip sturen
+    for (uint8_t d = 0; d < 8; d++) {
+        if (rowsKnown && rows[d] == lastRows[d]) continue;
+        ledMatrix.setRow(0, d, rows[d]);
+        lastRows[d] = rows[d];
+    }
+    rowsKnown = true;
 }

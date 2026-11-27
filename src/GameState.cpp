@@ -39,10 +39,27 @@ void updateResourceFractions(){
 
 };
 
+// zet warning n (1-12) aan of uit in game.warnings
+void setWarning(uint8_t n, bool on){
+    if (n < 1 || n > 12) return;
+    uint16_t mask = (uint16_t)1 << (n - 1);
+    if (on) game.warnings |= mask;
+    else    game.warnings &= ~mask;
+}
+
+void updateWarnings(){
+    // TODO: per warning de voorwaarde uitrekenen, bijv.
+    // setWarning(1, game.electricCharge_total > 0 && game.electricCharge_available / game.electricCharge_total < 0.1f);
+    return;
+};
+
 
 void updateDerived(){
+    //calculate values
     updateHorizontalSpeed();
     updateTimeToImpact();
     updateStartBurnIn();
     updateResourceFractions();
+    //calculate warnings
+    updateWarnings();
 }

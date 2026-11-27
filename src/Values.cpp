@@ -84,6 +84,30 @@ const ValueDef valueDefs[] = {
     {"AG10",  KIND_BOOL},       //CAG_10
 
     {"Comm",  KIND_PERCENT},    //COMMNET
+
+    {"W1",     KIND_BOOL},       //WARN_1
+    {"W2",     KIND_BOOL},       //WARN_2
+    {"W3",     KIND_BOOL},       //WARN_3
+    {"W4",     KIND_BOOL},       //WARN_4
+    {"W5",     KIND_BOOL},       //WARN_5
+    {"W6",     KIND_BOOL},       //WARN_6
+    {"W7",     KIND_BOOL},       //WARN_7
+    {"W8",     KIND_BOOL},       //WARN_8
+    {"W9",     KIND_BOOL},       //WARN_9
+    {"W10",    KIND_BOOL},       //WARN_10
+    {"W11",    KIND_BOOL},       //WARN_11
+    {"W12",    KIND_BOOL},       //WARN_12
+
+    {"AbSig", KIND_BOOL},       //ABORT_SIGNAL
+
+    {"TW1",   KIND_BOOL},       //TW_1
+    {"TW2",   KIND_BOOL},       //TW_2
+    {"TW3",   KIND_BOOL},       //TW_3
+    {"TW4",   KIND_BOOL},       //TW_4
+    {"TW5",   KIND_BOOL},       //TW_5
+    {"TW6",   KIND_BOOL},       //TW_6
+    {"TW7",   KIND_BOOL},       //TW_7
+    {"TW8",   KIND_BOOL},       //TW_8
 };
 static_assert(sizeof(valueDefs) / sizeof(valueDefs[0]) == VAL_COUNT,
               "valueDefs out of sync with ValueID");
@@ -121,6 +145,18 @@ static float sasModeState(uint8_t mode){
 static float cagState(uint8_t n){
     bool on = (game.cag[n / 8] >> (n % 8)) & 1;
     return on ? LED_ON : LED_IDLE;
+}
+
+// warning n (1-12): bit n-1 van game.warnings
+static float warnState(uint8_t n){
+    return ((game.warnings >> (n - 1)) & 1) ? LED_ON : LED_OFF;
+}
+
+// timewarp-LED n (1-8), cumulatief: aan als de warp-index minstens n-1 is
+static float twState(uint8_t n){
+    if (!game.inFlight) return LED_OFF;                 // niet in flight → hele balk uit
+    if (game.isAtmosphere && n > 4) return LED_OFF;     // atmosfeer: alleen 4 standen (1x-4x)
+    return (game.timewarpIndex >= n - 1) ? LED_ON : LED_OFF;
 }
 
 float getValue(ValueID id){
@@ -253,6 +289,33 @@ float getValue(ValueID id){
         //commnet strength
         case VAL_COMMNET:
             return game.commNetSignalPercent;
+
+            //warnings
+        case VAL_WARN_1:    return warnState(1);
+        case VAL_WARN_2:    return warnState(2);
+        case VAL_WARN_3:    return warnState(3);
+        case VAL_WARN_4:    return warnState(4);
+        case VAL_WARN_5:    return warnState(5);
+        case VAL_WARN_6:    return warnState(6);
+        case VAL_WARN_7:    return warnState(7);
+        case VAL_WARN_8:    return warnState(8);
+        case VAL_WARN_9:    return warnState(9);
+        case VAL_WARN_10:   return warnState(10);
+        case VAL_WARN_11:   return warnState(11);
+        case VAL_WARN_12:   return warnState(12);
+
+        //signals
+        case VAL_ABORT_SIGNAL:   return game.abortSignal ? LED_ON : LED_OFF;
+
+        //timewarp
+        case VAL_TW_1:           return twState(1);
+        case VAL_TW_2:           return twState(2);
+        case VAL_TW_3:           return twState(3);
+        case VAL_TW_4:           return twState(4);
+        case VAL_TW_5:           return twState(5);
+        case VAL_TW_6:           return twState(6);
+        case VAL_TW_7:           return twState(7);
+        case VAL_TW_8:           return twState(8);
 
         //voor makkelijk tellen totaal, alle andere values hierboven.
         case VAL_COUNT:

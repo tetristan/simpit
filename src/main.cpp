@@ -18,11 +18,11 @@ void OutputDisplays(){} //deze krijgt een eigen cpp die schrijft naar de display
 
 void setup()
 {
-#ifdef FAKE_GAME
+    #ifdef FAKE_GAME
 
     fakeGameInit();
     initOutput();
-#endif
+    #endif
 
     Serial.begin(115200);
     initI2C(); //moet als eerste, want i2c is nodig voor de volgende functies
@@ -33,13 +33,14 @@ void setup()
 
 void loop()
 {
-#ifdef FAKE_GAME
+    #ifdef FAKE_GAME
     printDebugToKSP();
     updateDerived();
     displayUpdate();
-#endif
+    #endif
     SimpitGetInfo();
     updateDerived(); //update de waarden die zelf berekend moeten worden, schrijf ze naar GameState
+
 
     //deze komen nog
     GetInputs(); //hier leest ie alle inputs van de simpit en schrijft ze naar een openbare struct
@@ -47,5 +48,6 @@ void loop()
     OutputControls(); //hier roept ie de SimpitLink om de Controlstate naar de game te schrijven, en om de gauges en displays aan te drijven (al split ik die miss later nog)
     displayUpdate();
     pwmOutput();
+    ledOutput();
     printDebugToKSP();
 }

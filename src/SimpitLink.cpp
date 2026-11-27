@@ -236,6 +236,8 @@ void messageHandler(byte messageType, byte msg[], byte msgSize) {
                 game.situation = m.vesselSituation;
                 game.currentStage = (float)m.currentStage;
                 game.commNetSignalPercent = (float)m.commNetSignalStrenghPercentage; // typo is in the library
+                game.timewarpIndex = m.currentTWIndex;
+                game.isAtmosphere = m.isInAtmoTW();
             }
             break;
 

@@ -74,6 +74,8 @@ struct GameState{
     uint8_t situation;          // KSP1 Vessel.Situations flags: 1 landed, 2 splashed, 4 prelaunch, 8 flying, 16 suborbital, 32 orbiting, 64 escaping, 128 docked
     float currentStage;         // number of stages remaining (capped at 255)
     float commNetSignalPercent; // 0 - 100, 0 when CommNet isn't used
+    uint8_t timewarpIndex;      // index binnen de huidige warp-modus: ruimte 0-7 (1x - 100000x), atmosfeer 0-3 (1x - 4x)
+    bool isAtmosphere;          // true = physics-warp (atmosfeer), false = rails-warp (ruimte)
 
     //target (only meaningful when hasTarget)
     float target_distance;
@@ -99,6 +101,12 @@ struct GameState{
     int16_t sasAvailable = 0;   // bitmask: 1 << AP_PROGRADE enz.
     uint8_t cag[2]       = {0, 0};
 
+    //warnings 1-12: bit 0 = warning 1 ... bit 11 = warning 12. Zetten met setWarning()
+    uint16_t warnings    = 0;
+
+    //signals (worden later berekend in updateDerived)
+    bool abortSignal     = false;   // ARM2: "abort now!"
+
     // float altitude;
     // bool SASOn;
     // uint32_t lastUpdateMs;
@@ -109,3 +117,4 @@ struct GameState{
 extern GameState game;
 
 void updateDerived();
+void setWarning(uint8_t n, bool on);   // n = 1-12
