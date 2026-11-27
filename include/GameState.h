@@ -8,7 +8,7 @@ enum SimpitMode : uint8_t{MODE_ORBIT, MODE_LANDING, MODE_PLANE, MODE_SURFACE, MO
 struct GameState{
     //connection
     bool connectedToGame;
-    SimpitMode mode;
+    // `mode` moved to InputState (input.mode): it comes from the 5-way dial, not from KSP
     //game general
 
     //resources

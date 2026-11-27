@@ -3,6 +3,8 @@
 #include "KerbalSimpitMessageTypes.h"
 #include "PayloadStructs.h"
 #include "Values.h"
+#include "ControlState.h"
+#include "Config.h"
 
 #include <Arduino.h>
 #include <KerbalSimpit.h>
@@ -289,6 +291,96 @@ void messageHandler(byte messageType, byte msg[], byte msgSize) {
             }
             break;
     }
+}
+
+// =====================================================================
+//  Sending ControlState to KSP
+// =====================================================================
+
+static AxisOutputs   lastSentAxes;            // what KSP currently has
+static bool          axesKnown    = false;    // false = send every axis group on the next pass
+static unsigned long lastAxisSend = 0;
+
+static void sendCommand(const Command& c) {
+    switch (c.type) {
+        case CMD_ACTION_ACTIVATE: MySimpit.activateAction(c.value); break;
+        case CMD_ACTION_TOGGLE:   MySimpit.toggleAction(c.value);   break;
+        case CMD_CAG_TOGGLE:      MySimpit.toggleCAG(c.value);      break;
+        case CMD_SAS_MODE:        MySimpit.setSASMode(c.value);     break;
+    }
+}
+
+#ifdef FAKE_GAME
+// No KSP in fake mode: print commands to the serial monitor instead,
+// so you can test every button without the game.
+static void debugPrintCommand(const Command& c) {
+    static const char* const names[] = {"ACTIVATE AG", "TOGGLE AG", "TOGGLE CAG", "SAS MODE"};
+    Serial.print(F("CMD "));
+    Serial.print(names[c.type]);
+    Serial.print(' ');
+    Serial.println(c.value);
+}
+#endif
+
+void SimpitSendControls() {
+#ifdef FAKE_GAME
+    for (uint8_t i = 0; i < controls.commandCount; i++) debugPrintCommand(controls.commands[i]);
+    controls.commandCount = 0;
+    return;
+#endif
+
+    // Not connected: throw commands away. A stage press while KSP is
+    // gone must NOT fire later when the connection comes back.
+    if (!game.connectedToGame) {
+        controls.commandCount = 0;
+        axesKnown = false;          // after reconnect, send all axes once
+        return;
+    }
+
+    // ---- 1. commands: send all, in order, then empty the queue ----
+    for (uint8_t i = 0; i < controls.commandCount; i++) {
+        sendCommand(controls.commands[i]);
+    }
+    controls.commandCount = 0;
+
+    // ---- 2. axes: max once per AXIS_SEND_INTERVAL_MS, only changed groups ----
+    if (millis() - lastAxisSend < AXIS_SEND_INTERVAL_MS) return;
+    lastAxisSend = millis();
+
+    const AxisOutputs& a = controls.axes;
+    AxisOutputs&       l = lastSentAxes;
+
+    if (!axesKnown || a.pitch != l.pitch || a.roll != l.roll || a.yaw != l.yaw) {
+        rotationMessage m;
+        m.setPitchRollYaw(a.pitch, a.roll, a.yaw);
+        MySimpit.send(ROTATION_MESSAGE, m);
+    }
+    if (!axesKnown || a.transX != l.transX || a.transY != l.transY || a.transZ != l.transZ) {
+        translationMessage m;
+        m.setXYZ(a.transX, a.transY, a.transZ);
+        MySimpit.send(TRANSLATION_MESSAGE, m);
+    }
+    if (!axesKnown || a.wheelSteer != l.wheelSteer || a.wheelThrottle != l.wheelThrottle) {
+        wheelMessage m;
+        m.setSteerThrottle(a.wheelSteer, a.wheelThrottle);
+        MySimpit.send(WHEEL_MESSAGE, m);
+    }
+    if (!axesKnown || a.camPitch != l.camPitch || a.camYaw != l.camYaw || a.camZoom != l.camZoom) {
+        cameraRotationMessage m;
+        m.setPitchRollYawZoom(a.camPitch, 0, a.camYaw, a.camZoom);
+        MySimpit.send(CAMERA_ROTATION_MESSAGE, m);
+    }
+    if (!axesKnown || a.throttle != l.throttle) {
+        throttleMessage m;
+        m.throttle = a.throttle;
+        MySimpit.send(THROTTLE_MESSAGE, m);
+    }
+    // EVA (a.evaX/Y/Z): intentionally NOT sent. KSP1 ignores translation
+    // messages on EVA and keyboard emulation is Windows-only.
+    // See docs/KSP2-notes.md for how to switch this on for KSP2.
+
+    lastSentAxes = a;
+    axesKnown = true;
 }
 
 //debug functions

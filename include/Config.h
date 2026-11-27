@@ -19,3 +19,17 @@ constexpr uint8_t MATRIX_DIN_PIN   = 51;  // MAX7219 DIN  (Mega hardware-SPI MOS
 constexpr uint8_t MATRIX_CLK_PIN   = 52;  // MAX7219 CLK  (Mega hardware-SPI SCK)
 constexpr uint8_t MATRIX_CS_PIN    = 53;  // MAX7219 LOAD/CS (Mega hardware-SPI SS)
 constexpr uint8_t MATRIX_INTENSITY = 4;   // HELDERHEID van alle matrix-LED's: 0 (zwak) - 15 (fel). Hier aanpassen.
+
+//INPUTS (pins: see the wiring tables at the top of InputHandler.cpp)
+constexpr unsigned long DEBOUNCE_MS       = 20;    // a button must be stable this long before it counts
+constexpr uint8_t  AXIS_SMOOTHING         = 4;     // 1 = no smoothing, higher = smoother but more lag
+constexpr uint8_t  AXIS_CALIBRATION_SAMPLES = 16;  // readings averaged for the joystick centre at power-on
+
+constexpr float JOYSTICK_DEADZONE   = 0.05f;  // 5% around the centre = 0. See docs/InputModule.md for adding a curve
+constexpr float PRECISION_FACTOR    = 0.25f;  // precision switch: joystick output x 0.25
+constexpr float THROTTLE_CUT        = 0.03f;  // bottom 3% of the throttle lever = exactly 0
+
+constexpr unsigned long AXIS_SEND_INTERVAL_MS = 50;  // axes go to KSP at most 20x per second (only when changed)
+
+constexpr uint8_t CAG_SOLAR = 6;   // custom action group behind the SOLAR function button (assign in the VAB)
+constexpr uint8_t CAG_COMMS = 7;   // custom action group behind the COMMS function button

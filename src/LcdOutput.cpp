@@ -1,5 +1,6 @@
 #include "LcdOutput.h"
 #include "GameState.h"
+#include "InputState.h"   // input.mode (5-way dial)
 #include "Values.h"
 #include "Format.h"
 #include "Config.h"
@@ -177,6 +178,6 @@ void displayUpdate(){
 
     lastUpdate = millis();
 
-    renderLcd(nextLcd, game.mode);
+    renderLcd(nextLcd, input.mode);   // mode comes from the dial (InputState)
     nextLcd = (nextLcd +1)% LCD_COUNT;
 }
